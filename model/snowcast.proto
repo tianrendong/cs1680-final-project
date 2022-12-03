@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option go_package = "server/pb";
+// import "google/protobuf/empty.proto";
+
+package snowcast;
+
+service Snowcast {
+      rpc SayHello (HelloRequest) returns (WelcomeReply) {}
+      rpc PlaySong (PlaySongRequest) returns (stream PlaySongReply) {} 
+      // rpc AddToPlaylist (AddToPlaylistRequest) returns (google.protobuf.Empty) {} 
+      // rpc RemoveFromPlaylist (RemoveFromPlaylistRequest) returns (google.protobuf.Empty) {} 
+}
+
+message HelloRequest {
+}
+
+message WelcomeReply {
+      repeated string songs = 1;
+}
+
+message PlaySongRequest {
+      string song = 1;
+}
+
+message PlaySongReply {
+      bytes data = 1;
+}
+
+
