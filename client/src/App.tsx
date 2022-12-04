@@ -1,6 +1,6 @@
 import './App.css'
 import { useState, useEffect } from "react"
-import { sayHello, playSong } from "./api/api"
+import { sayHello, getSong } from "./api/api"
 
 function App() {
   const [songs, setSongs] = useState<string[]>([])
@@ -17,7 +17,7 @@ function App() {
   }, [])
 
   function clickSong(song: string) {
-    playSong(song)
+    getSong(song).then(source => (source as AudioBufferSourceNode).start(0))
   }
 
   return (
