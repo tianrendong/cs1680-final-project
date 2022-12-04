@@ -13,17 +13,29 @@ export async function sayHello() {
       });
 }
 
+function concatTypedArrays(a: Uint8Array, b: Uint8Array) {
+      var c = new Uint8Array(a.length + b.length);
+      c.set(a, 0);
+      c.set(b, a.length);
+      return c;
+}
+
 export async function playSong(song: string) {
       const request = new proto.snowcast.PlaySongRequest()
       request.setSong(song)
 
       const stream = client.playSong(request, null)
 
+      let buf = new Uint8Array(0)
       stream.on("data", (data: any) => {
-            console.log(data)
+            buf = concatTypedArrays(buf, data.array[0])
       });
 
-      stream.on("end", function () {
-            console.log("end");
+      stream.on("end", async function () {
+            const audioCtx = new AudioContext();
+            const source = new AudioBufferSourceNode(audioCtx)
+            source.buffer = await audioCtx.decodeAudioData(buf.buffer)
+            source.connect(audioCtx.destination)
+            source.start(0)
       });
 }
