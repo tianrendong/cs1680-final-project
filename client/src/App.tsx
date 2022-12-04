@@ -18,13 +18,12 @@ function App() {
 
   function clickSong(song: string) {
     playSong(song)
-    // TODO: play out sound
   }
 
   return (
     <div>
       {songs.map((song, idx) =>
-        <div onClick={() => clickSong(song)}>{song}</div>
+        <div key={'song' + idx} onClick={() => clickSong(song)}>{song}</div>
       )}
     </div>
   );
