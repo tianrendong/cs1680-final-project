@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"sync"
 
@@ -16,18 +17,22 @@ type Connection struct {
 }
 
 type SnowcastService struct {
-	Connections []*Connection
+	Connections map[string]*Connection
 	pb.UnimplementedSnowcastServer
 }
 
 func (s *SnowcastService) SayHello(request *pb.HelloRequest, stream pb.Snowcast_SayHelloServer) error {
 	log.Printf("User %v logged in\n", request.UserId)
 	conn := &Connection{
-		stream: stream,
-		userId: request.UserId,
-		// ErrorChan: make(chan error),
+		stream:    stream,
+		userId:    request.UserId,
+		errorChan: make(chan error),
 	}
-	s.Connections = append(s.Connections, conn)
+	if _, ok := s.Connections[request.UserId]; ok {
+		return fmt.Errorf("user with id %v already exists", request.UserId)
+	} else {
+		s.Connections[request.UserId] = conn
+	}
 
 	// return nil
 	return <-conn.errorChan
@@ -50,6 +55,7 @@ func (s *SnowcastService) BroadcastMessage(ctx context.Context, message *pb.Mess
 
 			if err != nil {
 				log.Printf("Error with Stream: %v - Error: %v\n", conn.stream, err)
+				delete(s.Connections, conn.userId)
 				conn.errorChan <- err
 			}
 

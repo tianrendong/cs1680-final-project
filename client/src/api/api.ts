@@ -21,8 +21,8 @@ export async function sayHello(userId: string, addToMsgList: (m: Message) => voi
                         // start tag marked
                         buf = new Uint8Array(0)
                   }
-
-                  console.log(data.getAudiomsg())
+                  console.log(data)
+                  // console.log(data.getAudiomsg())
                   buf = concatTypedArrays(buf, data.getAudiomsg())
 
                   if (data.getTag() == 2) {

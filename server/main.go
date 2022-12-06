@@ -18,7 +18,9 @@ func main() {
 	}
 
 	s := grpc.NewServer()
-	service := &api.SnowcastService{}
+	service := &api.SnowcastService{
+		Connections: make(map[string]*api.Connection),
+	}
 	pb.RegisterSnowcastServer(s, service)
 
 	log.Printf("server listening at %v", listener.Addr())
