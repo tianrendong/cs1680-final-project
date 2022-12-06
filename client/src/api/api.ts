@@ -8,12 +8,35 @@ export async function sayHello(userId: string, addToMsgList: (m: string) => void
       request.setUserid(userId)
       const stream = client.sayHello(request, null)
 
-      stream.on("data", (data: any) => {
+      let buf = new Uint8Array(0)
+
+      stream.on("data", async (data: any) => {
+
             if (data.getMsgtype() == 0) {
                   addToMsgList(data.getStringmsg())
+            } else {
+
+                  if (data.getTag() == 1) {
+                        // start tag marked
+                        buf = new Uint8Array(0)
+                  }
+
+                  console.log(data.getAudiomsg())
+                  buf = concatTypedArrays(buf, data.getAudiomsg())
+
+                  if (data.getTag() == 2) {
+                        // end tag marked
+                        console.log("end tag marked")
+                        // console.log(buf.buffer)
+                        const audioCtx = new AudioContext();
+                        const source = new AudioBufferSourceNode(audioCtx)
+                        source.buffer = await audioCtx.decodeAudioData(buf.buffer)
+                        source.connect(audioCtx.destination)
+                        source.start()
+                  }
             }
 
-            console.log(data)
+
       });
 
       stream.on("status", (status: any) => {
@@ -50,6 +73,13 @@ export async function broadcastMusicFile(userId: string, music: File) {
             message.setFrom(userId)
             message.setMsgtype(1)
             message.setAudiomsg(buf)
+            if (start == 0) {
+                  message.setTag(1)
+            } else if (start + chunkSize > music.size) {
+                  message.setTag(2)
+            } else {
+                  message.setTag(0)
+            }
             client.broadcastMessage(message, null, (response, err) => {
                   // console.log(response)
             })

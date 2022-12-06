@@ -15,6 +15,12 @@ enum messageType {
       SONG = 1;
 }
 
+enum musicFileTag {
+      UNDEFINED = 0;
+      START = 1;
+      END = 2;
+}
+
 message HelloRequest {
       string userId = 1;
 
@@ -26,5 +32,6 @@ message Message {
       string stringMsg = 3;
       bytes audioMsg = 4;
       string time = 5;
+      musicFileTag tag = 6; 
 }
 
