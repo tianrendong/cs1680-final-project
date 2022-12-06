@@ -21,6 +21,7 @@ type SnowcastService struct {
 }
 
 func (s *SnowcastService) SayHello(request *pb.HelloRequest, stream pb.Snowcast_SayHelloServer) error {
+	log.Printf("User %v logged in\n", request.UserId)
 	conn := &Connection{
 		stream: stream,
 		userId: request.UserId,

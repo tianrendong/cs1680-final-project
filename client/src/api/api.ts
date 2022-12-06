@@ -1,9 +1,10 @@
 import { SnowcastClient } from "../model/snowcast_grpc_web_pb"
 import { concatTypedArrays } from "../utils/array";
+import { Message } from "../App";
 
 const client = new SnowcastClient("http://localhost:3333", null, null)
 
-export async function sayHello(userId: string, addToMsgList: (m: string) => void) {
+export async function sayHello(userId: string, addToMsgList: (m: Message) => void) {
       const request = new proto.snowcast.HelloRequest();
       request.setUserid(userId)
       const stream = client.sayHello(request, null)
@@ -13,7 +14,7 @@ export async function sayHello(userId: string, addToMsgList: (m: string) => void
       stream.on("data", async (data: any) => {
 
             if (data.getMsgtype() == 0) {
-                  addToMsgList(data.getStringmsg())
+                  addToMsgList({ From: data.getFrom(), Message: data.getStringmsg() })
             } else {
 
                   if (data.getTag() == 1) {
