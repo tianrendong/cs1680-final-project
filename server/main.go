@@ -16,9 +16,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
+
 	s := grpc.NewServer()
 	service := &api.SnowcastService{}
 	pb.RegisterSnowcastServer(s, service)
+
 	log.Printf("server listening at %v", listener.Addr())
 	if err := s.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %v", err)

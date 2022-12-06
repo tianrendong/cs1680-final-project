@@ -15,6 +15,8 @@
 const grpc = {};
 grpc.web = require('grpc-web');
 
+
+var google_protobuf_empty_pb = require('google-protobuf/google/protobuf/empty_pb.js')
 const proto = {};
 proto.snowcast = require('./snowcast_pb.js');
 
@@ -74,13 +76,13 @@ proto.snowcast.SnowcastPromiseClient =
  * @const
  * @type {!grpc.web.MethodDescriptor<
  *   !proto.snowcast.HelloRequest,
- *   !proto.snowcast.WelcomeReply>}
+ *   !proto.snowcast.Message>}
  */
 const methodDescriptor_Snowcast_SayHello = new grpc.web.MethodDescriptor(
   '/snowcast.Snowcast/SayHello',
-  grpc.web.MethodType.UNARY,
+  grpc.web.MethodType.SERVER_STREAMING,
   proto.snowcast.HelloRequest,
-  proto.snowcast.WelcomeReply,
+  proto.snowcast.Message,
   /**
    * @param {!proto.snowcast.HelloRequest} request
    * @return {!Uint8Array}
@@ -88,42 +90,37 @@ const methodDescriptor_Snowcast_SayHello = new grpc.web.MethodDescriptor(
   function(request) {
     return request.serializeBinary();
   },
-  proto.snowcast.WelcomeReply.deserializeBinary
+  proto.snowcast.Message.deserializeBinary
 );
 
 
 /**
- * @param {!proto.snowcast.HelloRequest} request The
- *     request proto
- * @param {?Object<string, string>} metadata User defined
+ * @param {!proto.snowcast.HelloRequest} request The request proto
+ * @param {?Object<string, string>=} metadata User defined
  *     call metadata
- * @param {function(?grpc.web.RpcError, ?proto.snowcast.WelcomeReply)}
- *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.snowcast.WelcomeReply>|undefined}
+ * @return {!grpc.web.ClientReadableStream<!proto.snowcast.Message>}
  *     The XHR Node Readable Stream
  */
 proto.snowcast.SnowcastClient.prototype.sayHello =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
+    function(request, metadata) {
+  return this.client_.serverStreaming(this.hostname_ +
       '/snowcast.Snowcast/SayHello',
       request,
       metadata || {},
-      methodDescriptor_Snowcast_SayHello,
-      callback);
+      methodDescriptor_Snowcast_SayHello);
 };
 
 
 /**
- * @param {!proto.snowcast.HelloRequest} request The
- *     request proto
+ * @param {!proto.snowcast.HelloRequest} request The request proto
  * @param {?Object<string, string>=} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.snowcast.WelcomeReply>}
- *     Promise that resolves to the response
+ * @return {!grpc.web.ClientReadableStream<!proto.snowcast.Message>}
+ *     The XHR Node Readable Stream
  */
 proto.snowcast.SnowcastPromiseClient.prototype.sayHello =
     function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
+  return this.client_.serverStreaming(this.hostname_ +
       '/snowcast.Snowcast/SayHello',
       request,
       metadata || {},
@@ -134,56 +131,61 @@ proto.snowcast.SnowcastPromiseClient.prototype.sayHello =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.snowcast.PlaySongRequest,
- *   !proto.snowcast.PlaySongReply>}
+ *   !proto.snowcast.Message,
+ *   !proto.google.protobuf.Empty>}
  */
-const methodDescriptor_Snowcast_PlaySong = new grpc.web.MethodDescriptor(
-  '/snowcast.Snowcast/PlaySong',
-  grpc.web.MethodType.SERVER_STREAMING,
-  proto.snowcast.PlaySongRequest,
-  proto.snowcast.PlaySongReply,
+const methodDescriptor_Snowcast_BroadcastMessage = new grpc.web.MethodDescriptor(
+  '/snowcast.Snowcast/BroadcastMessage',
+  grpc.web.MethodType.UNARY,
+  proto.snowcast.Message,
+  google_protobuf_empty_pb.Empty,
   /**
-   * @param {!proto.snowcast.PlaySongRequest} request
+   * @param {!proto.snowcast.Message} request
    * @return {!Uint8Array}
    */
   function(request) {
     return request.serializeBinary();
   },
-  proto.snowcast.PlaySongReply.deserializeBinary
+  google_protobuf_empty_pb.Empty.deserializeBinary
 );
 
 
 /**
- * @param {!proto.snowcast.PlaySongRequest} request The request proto
- * @param {?Object<string, string>=} metadata User defined
+ * @param {!proto.snowcast.Message} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.snowcast.PlaySongReply>}
+ * @param {function(?grpc.web.RpcError, ?proto.google.protobuf.Empty)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.google.protobuf.Empty>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.snowcast.SnowcastClient.prototype.playSong =
-    function(request, metadata) {
-  return this.client_.serverStreaming(this.hostname_ +
-      '/snowcast.Snowcast/PlaySong',
+proto.snowcast.SnowcastClient.prototype.broadcastMessage =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/snowcast.Snowcast/BroadcastMessage',
       request,
       metadata || {},
-      methodDescriptor_Snowcast_PlaySong);
+      methodDescriptor_Snowcast_BroadcastMessage,
+      callback);
 };
 
 
 /**
- * @param {!proto.snowcast.PlaySongRequest} request The request proto
+ * @param {!proto.snowcast.Message} request The
+ *     request proto
  * @param {?Object<string, string>=} metadata User defined
  *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.snowcast.PlaySongReply>}
- *     The XHR Node Readable Stream
+ * @return {!Promise<!proto.google.protobuf.Empty>}
+ *     Promise that resolves to the response
  */
-proto.snowcast.SnowcastPromiseClient.prototype.playSong =
+proto.snowcast.SnowcastPromiseClient.prototype.broadcastMessage =
     function(request, metadata) {
-  return this.client_.serverStreaming(this.hostname_ +
-      '/snowcast.Snowcast/PlaySong',
+  return this.client_.unaryCall(this.hostname_ +
+      '/snowcast.Snowcast/BroadcastMessage',
       request,
       metadata || {},
-      methodDescriptor_Snowcast_PlaySong);
+      methodDescriptor_Snowcast_BroadcastMessage);
 };
 
 

@@ -7,6 +7,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -18,8 +19,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SnowcastClient interface {
-	SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*WelcomeReply, error)
-	PlaySong(ctx context.Context, in *PlaySongRequest, opts ...grpc.CallOption) (Snowcast_PlaySongClient, error)
+	SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (Snowcast_SayHelloClient, error)
+	BroadcastMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type snowcastClient struct {
@@ -30,21 +31,12 @@ func NewSnowcastClient(cc grpc.ClientConnInterface) SnowcastClient {
 	return &snowcastClient{cc}
 }
 
-func (c *snowcastClient) SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*WelcomeReply, error) {
-	out := new(WelcomeReply)
-	err := c.cc.Invoke(ctx, "/snowcast.Snowcast/SayHello", in, out, opts...)
+func (c *snowcastClient) SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (Snowcast_SayHelloClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Snowcast_ServiceDesc.Streams[0], "/snowcast.Snowcast/SayHello", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
-}
-
-func (c *snowcastClient) PlaySong(ctx context.Context, in *PlaySongRequest, opts ...grpc.CallOption) (Snowcast_PlaySongClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Snowcast_ServiceDesc.Streams[0], "/snowcast.Snowcast/PlaySong", opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &snowcastPlaySongClient{stream}
+	x := &snowcastSayHelloClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -54,29 +46,38 @@ func (c *snowcastClient) PlaySong(ctx context.Context, in *PlaySongRequest, opts
 	return x, nil
 }
 
-type Snowcast_PlaySongClient interface {
-	Recv() (*PlaySongReply, error)
+type Snowcast_SayHelloClient interface {
+	Recv() (*Message, error)
 	grpc.ClientStream
 }
 
-type snowcastPlaySongClient struct {
+type snowcastSayHelloClient struct {
 	grpc.ClientStream
 }
 
-func (x *snowcastPlaySongClient) Recv() (*PlaySongReply, error) {
-	m := new(PlaySongReply)
+func (x *snowcastSayHelloClient) Recv() (*Message, error) {
+	m := new(Message)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
+func (c *snowcastClient) BroadcastMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/snowcast.Snowcast/BroadcastMessage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SnowcastServer is the server API for Snowcast service.
 // All implementations must embed UnimplementedSnowcastServer
 // for forward compatibility
 type SnowcastServer interface {
-	SayHello(context.Context, *HelloRequest) (*WelcomeReply, error)
-	PlaySong(*PlaySongRequest, Snowcast_PlaySongServer) error
+	SayHello(*HelloRequest, Snowcast_SayHelloServer) error
+	BroadcastMessage(context.Context, *Message) (*emptypb.Empty, error)
 	mustEmbedUnimplementedSnowcastServer()
 }
 
@@ -84,11 +85,11 @@ type SnowcastServer interface {
 type UnimplementedSnowcastServer struct {
 }
 
-func (UnimplementedSnowcastServer) SayHello(context.Context, *HelloRequest) (*WelcomeReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SayHello not implemented")
+func (UnimplementedSnowcastServer) SayHello(*HelloRequest, Snowcast_SayHelloServer) error {
+	return status.Errorf(codes.Unimplemented, "method SayHello not implemented")
 }
-func (UnimplementedSnowcastServer) PlaySong(*PlaySongRequest, Snowcast_PlaySongServer) error {
-	return status.Errorf(codes.Unimplemented, "method PlaySong not implemented")
+func (UnimplementedSnowcastServer) BroadcastMessage(context.Context, *Message) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BroadcastMessage not implemented")
 }
 func (UnimplementedSnowcastServer) mustEmbedUnimplementedSnowcastServer() {}
 
@@ -103,43 +104,43 @@ func RegisterSnowcastServer(s grpc.ServiceRegistrar, srv SnowcastServer) {
 	s.RegisterService(&Snowcast_ServiceDesc, srv)
 }
 
-func _Snowcast_SayHello_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(HelloRequest)
+func _Snowcast_SayHello_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(HelloRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(SnowcastServer).SayHello(m, &snowcastSayHelloServer{stream})
+}
+
+type Snowcast_SayHelloServer interface {
+	Send(*Message) error
+	grpc.ServerStream
+}
+
+type snowcastSayHelloServer struct {
+	grpc.ServerStream
+}
+
+func (x *snowcastSayHelloServer) Send(m *Message) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Snowcast_BroadcastMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Message)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SnowcastServer).SayHello(ctx, in)
+		return srv.(SnowcastServer).BroadcastMessage(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/snowcast.Snowcast/SayHello",
+		FullMethod: "/snowcast.Snowcast/BroadcastMessage",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SnowcastServer).SayHello(ctx, req.(*HelloRequest))
+		return srv.(SnowcastServer).BroadcastMessage(ctx, req.(*Message))
 	}
 	return interceptor(ctx, in, info, handler)
-}
-
-func _Snowcast_PlaySong_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(PlaySongRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(SnowcastServer).PlaySong(m, &snowcastPlaySongServer{stream})
-}
-
-type Snowcast_PlaySongServer interface {
-	Send(*PlaySongReply) error
-	grpc.ServerStream
-}
-
-type snowcastPlaySongServer struct {
-	grpc.ServerStream
-}
-
-func (x *snowcastPlaySongServer) Send(m *PlaySongReply) error {
-	return x.ServerStream.SendMsg(m)
 }
 
 // Snowcast_ServiceDesc is the grpc.ServiceDesc for Snowcast service.
@@ -150,14 +151,14 @@ var Snowcast_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*SnowcastServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "SayHello",
-			Handler:    _Snowcast_SayHello_Handler,
+			MethodName: "BroadcastMessage",
+			Handler:    _Snowcast_BroadcastMessage_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "PlaySong",
-			Handler:       _Snowcast_PlaySong_Handler,
+			StreamName:    "SayHello",
+			Handler:       _Snowcast_SayHello_Handler,
 			ServerStreams: true,
 		},
 	},

@@ -1,30 +1,51 @@
 import './App.css'
-import { useState, useEffect } from "react"
-import { sayHello, getSong } from "./api/api"
+import { useRef, useState, useEffect } from "react"
+import { sayHello, broadcastMessage, broadcastMusicFile } from "./api/api"
+
+interface Message {
+
+}
 
 function App() {
-  const [songs, setSongs] = useState<string[]>([])
+  const [file, setFile] = useState<File | null>(null)
+
+  // Create a reference to the hidden file input element
+  const [msgList, setMsgList] = useState<string[]>([]);
 
   useEffect(() => {
-    // say Hello to server and get playlist from data
-    sayHello()
-      .then((songs) => {
-        setSongs(songs as string[])
-      })
-      .catch((error) => {
-        console.error(error)
-      })
+    sayHello("jenny", addToMsgList)
   }, [])
 
-  function clickSong(song: string) {
-    getSong(song).then(source => (source as AudioBufferSourceNode).start(0))
+  function addToMsgList(msg: string) {
+    setMsgList(msgList => [...msgList, msg])
+  }
+
+  function sendMessage(msg: string) {
+    broadcastMessage("jenny", msg)
+  }
+
+  function handleUpload() {
+    if (file) {
+      broadcastMusicFile("jenny", file)
+    }
+
+  }
+
+
+  function handleChangeInput(event: any) {
+    setFile(event.target.files[0])
   }
 
   return (
     <div>
-      {songs.map((song, idx) =>
-        <div key={'song' + idx} onClick={() => clickSong(song)}>{song}</div>
-      )}
+      {msgList.map((msg, index) => <div>{msg}</div>)}
+      <button onClick={() => { sendMessage("hey") }}>send message</button>
+      <input
+        type="file"
+        accept="audio/mpeg3"
+        onChange={handleChangeInput}
+      />
+      <button onClick={handleUpload}>upload</button>
     </div>
   );
 }
