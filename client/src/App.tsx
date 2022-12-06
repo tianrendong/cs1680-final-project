@@ -31,7 +31,6 @@ function App() {
     if (file) {
       broadcastMusicFile(username, file)
     }
-
   }
 
 
