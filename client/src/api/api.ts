@@ -31,6 +31,14 @@ export async function sayHello(userId: string, addToMsgList: (m: Message) => voi
                         console.log(buf)
                         const audioCtx = new AudioContext();
                         const source = new AudioBufferSourceNode(audioCtx)
+                        // audioCtx.decodeAudioData(buf.buffer)
+                        //       .then((decodedData) => {
+                        //             source.connect(audioCtx.destination)
+                        //             source.start()
+                        //       })
+                        //       .catch((err) => {
+                        //             console.log(err)
+                        //       })
                         source.buffer = await audioCtx.decodeAudioData(buf.buffer)
                         source.connect(audioCtx.destination)
                         source.start()
@@ -64,21 +72,15 @@ export async function broadcastMessage(userId: string, msg: string) {
 const chunkSize = 1024
 export async function broadcastMusicFile(userId: string, music: File) {
 
-      console.log(music.size)
-      // const buffer = await music.arrayBuffer()
-
       for (let start = 0; start < music.size; start += chunkSize) {
-            // const chunk = buffer.slice(start, start + chunkSize + 1)
-            // const buf = new Uint8Array(chunk)
-            // const chunk: Blob = music.slice(start, start + chunkSize + 1, "audio/mpeg3")
-            // const buffer: ArrayBuffer = await chunk.arrayBuffer()
-            const buffer = await getAsByteArray(music)
-            const buf = buffer.slice(start, start + chunkSize + 1)
-            // const buf: Uint8Array = new Uint8Array(buffer)
+            const buffer = music.slice(start, start + chunkSize)
+            const buf = await buffer.arrayBuffer()
+            const bufArray = new Uint8Array(buf)
+
             const message = new proto.snowcast.Message
             message.setFrom(userId)
             message.setMsgtype(1)
-            message.setAudiomsg(buf)
+            message.setAudiomsg(bufArray)
             if (start == 0) {
                   message.setTag(1)
             } else if (start + chunkSize > music.size) {
@@ -92,43 +94,4 @@ export async function broadcastMusicFile(userId: string, music: File) {
       }
 
 
-}
-
-// export async function getSong(song: string) {
-//       const request = new proto.snowcast.PlaySongRequest()
-//       request.setSong(song)
-
-//       const stream = client.playSong(request, null)
-
-//       let buf = new Uint8Array(0)
-//       stream.on("data", (data: any) => {
-//             buf = concatTypedArrays(buf, data.array[0])
-//       });
-
-//       const audioCtx = new AudioContext();
-//       const source = new AudioBufferSourceNode(audioCtx)
-//       stream.on("end", async function () {
-//             source.buffer = await audioCtx.decodeAudioData(buf.buffer)
-//             source.connect(audioCtx.destination)
-//       });
-//       return new Promise((resolve) => { resolve(source) })
-// }
-
-function readFile(file: File) {
-      return new Promise((resolve, reject) => {
-            // Create file reader
-            let reader = new FileReader()
-
-            // Register event listeners
-            reader.addEventListener("loadend", e => resolve(e.target!.result))
-            reader.addEventListener("error", reject)
-
-            // Read file
-            reader.readAsArrayBuffer(file)
-      })
-}
-
-async function getAsByteArray(file: File) {
-      const bytes = await readFile(file)
-      return new Uint8Array(bytes as ArrayBuffer)
 }
