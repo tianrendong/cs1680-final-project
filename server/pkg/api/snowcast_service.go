@@ -34,15 +34,12 @@ func (s *SnowcastService) SayHello(request *pb.HelloRequest, stream pb.Snowcast_
 		s.Connections[request.UserId] = conn
 	}
 
-	// return nil
 	return <-conn.errorChan
 }
 
 func (s *SnowcastService) BroadcastMessage(ctx context.Context, message *pb.Message) (*emptypb.Empty, error) {
 	wait := sync.WaitGroup{}
 	done := make(chan int)
-
-	// fmt.Println(message.GetAudioMsg())
 
 	for _, conn := range s.Connections {
 		wait.Add(1)

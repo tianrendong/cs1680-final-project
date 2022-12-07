@@ -1,25 +1,30 @@
 import './App.css'
 import { useRef, useState, useEffect } from "react"
-import { sayHello, broadcastMessage, broadcastMusicFile } from "./api/api"
+import { sayHello, broadcastMessage, broadcastFile } from "./api/api"
+import { messageType } from './model/model';
+import TextFile from './components/TextFile';
 
-export interface Message {
-  From: string,
-  Message?: string,
-  Music?: File,
+export interface MessageDisplay {
+  From: string;
+  MsgType: messageType;
+  Text?: string,
+  Music?: AudioBufferSourceNode,
+  TextFile?: string,
 }
+
 
 function App() {
   const [username, setUsername] = useState<string>("")
+  const [message, setMessage] = useState<string>("")
   const [file, setFile] = useState<File | null>(null)
 
-  // Create a reference to the hidden file input element
-  const [msgList, setMsgList] = useState<Message[]>([]);
+  const [msgList, setMsgList] = useState<MessageDisplay[]>([]);
 
   function handleLogin() {
     sayHello(username, addToMsgList)
   }
 
-  function addToMsgList(msg: Message) {
+  function addToMsgList(msg: MessageDisplay) {
     setMsgList(msgList => [...msgList, msg])
   }
 
@@ -29,13 +34,13 @@ function App() {
 
   function handleUpload() {
     if (file) {
-      broadcastMusicFile(username, file)
+      const fileType = file.type.split("/")[0]
+      if (fileType == "text") {
+        broadcastFile(username, file, messageType.TEXTFILE)
+      } else if (fileType == "audio") {
+        broadcastFile(username, file, messageType.SONG)
+      }
     }
-  }
-
-
-  function handleChangeInput(event: any) {
-    setFile(event.target.files[0])
   }
 
   return (
@@ -45,15 +50,26 @@ function App() {
       <input placeholder="Enter username" onChange={(e) => { setUsername(e.target.value as string) }}></input>
       <button onClick={handleLogin}>Log in</button>
 
+      <h1>messages</h1>
+      {msgList.map((msg, index) =>
+        <div>
+          <div> {msg.From}: </div>
+          {msg.MsgType == messageType.TEXTFILE ? <TextFile Msg={msg} /> : ""}
+          {msg.MsgType == messageType.TEXT ? msg.Text : ""}
+        </div>
+
+      )}
+
       <h1>send messages</h1>
-      {msgList.map((msg, index) => <div>{msg.From}: {msg.Message ? msg.Message : ""}</div>)}
-      <button onClick={() => { sendMessage("hey") }}>send message</button>
+      <input placeholder="Enter message" onChange={(e) => { setMessage(e.target.value as string) }}></input>
+      <button onClick={() => { sendMessage(message) }}>send message</button>
+
       <input
         type="file"
-        accept="audio/mpeg3"
-        onChange={handleChangeInput}
+        accept="audio/mpeg3,.txt"
+        onChange={(e) => { setFile(e.target!.files![0]) }}
       />
-      <button onClick={handleUpload}>upload</button>
+      <button onClick={handleUpload}>send file</button>
     </div>
   );
 }

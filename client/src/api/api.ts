@@ -1,10 +1,12 @@
 import { SnowcastClient } from "../model/snowcast_grpc_web_pb"
 import { concatTypedArrays } from "../utils/array";
-import { Message } from "../App";
+import { MessageDisplay } from "../App";
+import { messageType, fileTag } from "../model/model"
 
 const client = new SnowcastClient("http://localhost:3333", null, null)
+const CHUNK_SIZE = 1024
 
-export async function sayHello(userId: string, addToMsgList: (m: Message) => void) {
+export async function sayHello(userId: string, addToMsgList: (m: MessageDisplay) => void) {
       const request = new proto.snowcast.HelloRequest();
       request.setUserid(userId)
       const stream = client.sayHello(request, null)
@@ -13,47 +15,47 @@ export async function sayHello(userId: string, addToMsgList: (m: Message) => voi
 
       stream.on("data", async (data: any) => {
 
-            if (data.getMsgtype() == 0) {
-                  addToMsgList({ From: data.getFrom(), Message: data.getStringmsg() })
-            } else {
+            if (data.getMsgtype() == messageType.TEXT) {
+                  addToMsgList({ From: data.getFrom(), MsgType: messageType.TEXT, Text: data.getStringmsg() })
 
-                  if (data.getTag() == 1) {
-                        // start tag marked
+            } else if (data.getMsgtype() == messageType.SONG) {
+                  {
+                        if (data.getTag() == fileTag.START) {
+                              buf = new Uint8Array(0)
+                        }
+                        console.log(data)
+                        buf = concatTypedArrays(buf, data.getFilecontent())
+
+                        if (data.getTag() == fileTag.END) {
+                              const audioCtx = new AudioContext();
+                              const source = new AudioBufferSourceNode(audioCtx)
+                              source.buffer = await audioCtx.decodeAudioData(buf.buffer)
+                              source.connect(audioCtx.destination)
+                              addToMsgList({ From: data.getFrom(), MsgType: messageType.SONG, Music: source })
+                        }
+                  }
+
+            } else if (data.getMsgtype() == messageType.TEXTFILE) {
+                  console.log(data)
+                  if (data.getTag() == fileTag.START) {
                         buf = new Uint8Array(0)
                   }
-                  console.log(data)
-                  // console.log(data.getAudiomsg())
-                  buf = concatTypedArrays(buf, data.getAudiomsg())
 
-                  if (data.getTag() == 2) {
-                        // end tag marked
-                        console.log("end tag marked")
-                        console.log(buf)
-                        const audioCtx = new AudioContext();
-                        const source = new AudioBufferSourceNode(audioCtx)
-                        // audioCtx.decodeAudioData(buf.buffer)
-                        //       .then((decodedData) => {
-                        //             source.connect(audioCtx.destination)
-                        //             source.start()
-                        //       })
-                        //       .catch((err) => {
-                        //             console.log(err)
-                        //       })
-                        source.buffer = await audioCtx.decodeAudioData(buf.buffer)
-                        source.connect(audioCtx.destination)
-                        source.start()
+                  buf = concatTypedArrays(buf, data.getFilecontent())
+                  if (data.getTag() == fileTag.END) {
+                        addToMsgList({ From: data.getFrom(), MsgType: messageType.TEXTFILE, Text: data.getStringmsg(), TextFile: buf.toString() })
+
                   }
             }
-
-
-      });
+      }
+      );
 
       stream.on("status", (status: any) => {
             console.log(status.code, status.details, status.metadata);
       });
 
       stream.on("end", async function () {
-            console.log('end')
+            console.log('Stream ended')
       });
 }
 
@@ -62,36 +64,35 @@ export async function broadcastMessage(userId: string, msg: string) {
       message.setFrom(userId)
       message.setMsgtype(0)
       message.setStringmsg(msg)
-      // message.setTime()
+      // message.setTime(Date.now())
 
-      client.broadcastMessage(message, null, (response, err) => {
-            // console.log(response)
+      client.broadcastMessage(message, null, (err, response) => {
+            if (err) console.log(err)
       })
 }
 
-const chunkSize = 1024
-export async function broadcastMusicFile(userId: string, music: File) {
+export async function broadcastFile(userId: string, file: File, msgType: messageType) {
 
-      for (let start = 0; start < music.size; start += chunkSize) {
-            const buffer = music.slice(start, start + chunkSize)
+      for (let start = 0; start < file.size; start += CHUNK_SIZE) {
+            const buffer = file.slice(start, start + CHUNK_SIZE)
             const buf = await buffer.arrayBuffer()
             const bufArray = new Uint8Array(buf)
 
             const message = new proto.snowcast.Message
             message.setFrom(userId)
-            message.setMsgtype(1)
-            message.setAudiomsg(bufArray)
+            message.setMsgtype(msgType)
+            message.setFilecontent(bufArray)
+            message.setStringmsg(file.name)
             if (start == 0) {
                   message.setTag(1)
-            } else if (start + chunkSize > music.size) {
+            } else if (start + CHUNK_SIZE > file.size) {
                   message.setTag(2)
             } else {
                   message.setTag(0)
             }
-            client.broadcastMessage(message, null, (response, err) => {
-                  // console.log(response)
+
+            client.broadcastMessage(message, null, (err, response) => {
+                  if (err) console.log(err)
             })
       }
-
-
 }

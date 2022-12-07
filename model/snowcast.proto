@@ -2,6 +2,7 @@ syntax = "proto3";
 
 option go_package = "server/pb";
 import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 
 package snowcast;
 
@@ -13,25 +14,24 @@ service Snowcast {
 enum messageType {
       TEXT = 0;
       SONG = 1;
+      TEXTFILE = 2;
 }
 
-enum musicFileTag {
-      UNDEFINED = 0;
-      START = 1;
-      END = 2;
+enum fileTag {
+      START = 0;
+      END = 1;
 }
 
 message HelloRequest {
       string userId = 1;
-
 }
 
 message Message {
       string from = 1;
       messageType msgType = 2;
-      string stringMsg = 3;
-      bytes audioMsg = 4;
-      string time = 5;
-      musicFileTag tag = 6; 
+      optional string stringMsg = 3;
+      optional bytes fileContent = 4;
+      google.protobuf.Timestamp time = 5;
+      optional fileTag tag = 6; 
 }
 
