@@ -24,6 +24,8 @@ export async function sayHello(userId: string, addToMsgList: (m: MessageDisplay)
                               buf = new Uint8Array(0)
                         }
                         console.log(data)
+                        console.log(data.getFilecontent())
+                        console.log(typeof (data.getFilecontent()))
                         buf = concatTypedArrays(buf, data.getFilecontent())
 
                         if (data.getTag() == fileTag.END) {
@@ -31,7 +33,9 @@ export async function sayHello(userId: string, addToMsgList: (m: MessageDisplay)
                               const source = new AudioBufferSourceNode(audioCtx)
                               source.buffer = await audioCtx.decodeAudioData(buf.buffer)
                               source.connect(audioCtx.destination)
-                              addToMsgList({ From: data.getFrom(), MsgType: messageType.SONG, Music: source })
+                              source.start()
+                              // addToMsgList({ From: data.getFrom(), MsgType: messageType.SONG, Music: source })
+
                         }
                   }
 
@@ -84,11 +88,11 @@ export async function broadcastFile(userId: string, file: File, msgType: message
             message.setFilecontent(bufArray)
             message.setStringmsg(file.name)
             if (start == 0) {
-                  message.setTag(1)
+                  message.setTag(fileTag.START)
             } else if (start + CHUNK_SIZE > file.size) {
-                  message.setTag(2)
+                  message.setTag(fileTag.END)
             } else {
-                  message.setTag(0)
+                  message.setTag(fileTag.UNRECOGNIZED)
             }
 
             client.broadcastMessage(message, null, (err, response) => {
