@@ -24,14 +24,14 @@ export async function sayHello(userId: string, addToMsgList: (m: MessageDisplay)
                               buf = new Uint8Array(0)
                         }
                         console.log(data)
-                        console.log(data.getFilecontent())
-                        console.log(typeof (data.getFilecontent()))
                         buf = concatTypedArrays(buf, data.getFilecontent())
 
                         if (data.getTag() == fileTag.END) {
+                              console.log(buf.length)
                               const audioCtx = new AudioContext();
                               const source = new AudioBufferSourceNode(audioCtx)
                               source.buffer = await audioCtx.decodeAudioData(buf.buffer)
+                              console.log(source.buffer.duration)
                               source.connect(audioCtx.destination)
                               source.start()
                               // addToMsgList({ From: data.getFrom(), MsgType: messageType.SONG, Music: source })
