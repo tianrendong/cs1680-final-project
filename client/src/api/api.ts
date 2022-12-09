@@ -23,7 +23,7 @@ export async function sayHello(userId: string, addToMsgList: (m: MessageDisplay)
                         if (data.getTag() == fileTag.START) {
                               buf = new Uint8Array(0)
                         }
-                        console.log(data)
+                        // console.log(data)
                         buf = concatTypedArrays(buf, data.getFilecontent())
 
                         if (data.getTag() == fileTag.END) {
@@ -70,7 +70,7 @@ export async function broadcastMessage(userId: string, msg: string) {
       message.setStringmsg(msg)
       // message.setTime(Date.now())
 
-      client.broadcastMessage(message, null, (err, response) => {
+      client.broadcastMessage(message, null, (err) => {
             if (err) console.log(err)
       })
 }
@@ -78,7 +78,7 @@ export async function broadcastMessage(userId: string, msg: string) {
 export async function broadcastFile(userId: string, file: File, msgType: messageType) {
 
       for (let start = 0; start < file.size; start += CHUNK_SIZE) {
-            const buffer = file.slice(start, start + CHUNK_SIZE)
+            const buffer = file.slice(start, Math.min(start + CHUNK_SIZE, file.size))
             const buf = await buffer.arrayBuffer()
             const bufArray = new Uint8Array(buf)
 
@@ -89,13 +89,14 @@ export async function broadcastFile(userId: string, file: File, msgType: message
             message.setStringmsg(file.name)
             if (start == 0) {
                   message.setTag(fileTag.START)
-            } else if (start + CHUNK_SIZE > file.size) {
+            } else if (start + CHUNK_SIZE >= file.size) {
                   message.setTag(fileTag.END)
             } else {
                   message.setTag(fileTag.UNRECOGNIZED)
             }
 
             client.broadcastMessage(message, null, (err, response) => {
+                  console.log(start)
                   if (err) console.log(err)
             })
       }
