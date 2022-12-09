@@ -52,7 +52,7 @@ function App() {
 
       <h1>messages</h1>
       {msgList.map((msg, index) =>
-        <div>
+        <div key={index}>
           <div> {msg.From}: </div>
           {msg.MsgType == messageType.TEXTFILE ? <TextFile Msg={msg} /> : ""}
           {msg.MsgType == messageType.TEXT ? msg.Text : ""}
