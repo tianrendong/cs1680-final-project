@@ -2,36 +2,33 @@ syntax = "proto3";
 
 option go_package = "server/pb";
 import "google/protobuf/empty.proto";
-import "google/protobuf/timestamp.proto";
 
 package snowcast;
 
 service Snowcast {
-      rpc SayHello (HelloRequest) returns (stream Message) {}
-      rpc BroadcastMessage (Message) returns (google.protobuf.Empty) {} 
-}
-
-enum messageType {
-      TEXT = 0;
-      SONG = 1;
-      TEXTFILE = 2;
-}
-
-enum fileTag {
-      START = 0;
-      END = 1;
+      rpc SayHello (HelloRequest) returns (WelcomeReply) {}
+      rpc SetupNotifications (google.protobuf.Empty) returns (stream Notification) {}
+      rpc SendMessage (Message) returns (google.protobuf.Empty) {}
+      rpc SendFile (stream FileChunk) returns (google.protobuf.Empty) {}
+      rpc StreamFile (FileRequest) returns (stream FileChunk) {}
 }
 
 message HelloRequest {
       string userId = 1;
 }
 
-message Message {
-      string from = 1;
-      messageType msgType = 2;
-      optional string stringMsg = 3;
-      optional bytes fileContent = 4;
-      google.protobuf.Timestamp time = 5;
-      optional fileTag tag = 6; 
+message WelcomeReply {
+      string welcomeMessage = 1;
 }
 
+message Notification {
+}
+
+message Message {
+}
+
+message FileChunk {
+}
+
+message FileRequest {
+}
