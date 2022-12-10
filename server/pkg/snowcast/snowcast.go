@@ -8,36 +8,27 @@ import (
 	"os"
 	"sync"
 
-	"github.com/google/uuid"
 	"github.com/jennyyu212/cs1680-final-project/pb"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 const (
-	FILES_FOLDER = "./files/"
-	CHUNK_SIZE   = 1024
+	CHUNK_SIZE = 1024
 )
 
 type Connection struct {
 	userId string
-	conn   pb.Snowcast_ConnectServer
+	stream pb.Snowcast_ConnectServer
 	errCh  chan error
 }
 
-type File struct {
-	id   string
-	name string
-}
-
 type SnowcastService struct {
-	connections map[string]*Connection
+	connections     map[string]*Connection
+	connectionsLock sync.RWMutex
 
 	messages    []*pb.Message
 	latestIndex int
 	msgLock     sync.RWMutex
-
-	files     map[string]File
-	filesLock sync.RWMutex
 
 	pb.UnimplementedSnowcastServer
 }
@@ -46,48 +37,60 @@ func NewService() *SnowcastService {
 	return &SnowcastService{
 		connections: make(map[string]*Connection),
 		messages:    make([]*pb.Message, 0),
-		files:       make(map[string]File),
 	}
 }
 
 func (s *SnowcastService) Connect(request *pb.User, connection pb.Snowcast_ConnectServer) error {
-	log.Printf("User %v connected and listening\n", request.GetUserId())
+	log.Printf("User %v connected\n", request.GetUserId())
 
 	conn := &Connection{
 		userId: request.GetUserId(),
-		conn:   connection,
+		stream: connection,
 		errCh:  make(chan error),
 	}
 
+	s.connectionsLock.Lock()
+	defer s.connectionsLock.Unlock()
 	if _, ok := s.connections[request.GetUserId()]; !ok {
 		s.connections[request.UserId] = conn
 	} else {
-		return fmt.Errorf("user with id %v already exists", request.UserId)
+		return fmt.Errorf("user with id %v already exists", request.GetUserId())
 	}
 
-	return <-conn.errCh
+	e := <-conn.errCh
+	log.Printf("User %v disconnected\n", request.GetUserId())
+
+	s.connectionsLock.Lock()
+	delete(s.connections, request.GetUserId())
+	s.connectionsLock.Unlock()
+
+	return e
 }
 
 func (s *SnowcastService) SendMessage(ctx context.Context, message *pb.Message) (*emptypb.Empty, error) {
-	log.Printf("User %v sent message: %v\n", message.GetUser(), message.GetMessage())
+	log.Printf("User %v sent message: %v\n", message.GetSender(), message.GetMessage())
 
 	s.msgLock.Lock()
 	s.messages = append(s.messages, message)
 	s.latestIndex++
 	s.msgLock.Unlock()
 
-	i := new(int32)
-	*i = int32(s.latestIndex)
 	notification := &pb.Notification{
-		Type:      pb.NotificationType_MESSAGE,
-		LatestMsg: i,
+		LatestMsg: int32(s.latestIndex),
 	}
 
+	var wg sync.WaitGroup
 	for _, conn := range s.connections {
-		if err := conn.conn.Send(notification); err != nil {
-			return nil, err
-		}
+		wg.Add(1)
+		c := conn
+		go func() {
+			if e := c.stream.Send(notification); e != nil {
+				c.errCh <- e
+			}
+			wg.Done()
+		}()
 	}
+	wg.Wait()
 
 	return &emptypb.Empty{}, nil
 }
@@ -105,46 +108,10 @@ func (s *SnowcastService) FetchMessages(ctx context.Context, request *pb.FetchRe
 	}, nil
 }
 
-func (s *SnowcastService) SendFile(connection pb.Snowcast_SendFileServer) error {
-	chunk, err := connection.Recv()
-	if err != nil {
-		return err
-	}
-	id := uuid.New().String()
-	fileName := chunk.GetFileName()
-	f, e := os.Create(FILES_FOLDER + id + fileName)
+func (s *SnowcastService) FetchMusic(request *pb.Music, connection pb.Snowcast_FetchMusicServer) error {
+	f, e := os.Open(request.GetName())
 	if e != nil {
 		return e
-	}
-
-	for {
-		chunk, err = connection.Recv()
-		if err != nil {
-			if err != io.EOF {
-				return err
-			}
-			break
-		}
-		f.Write(chunk.GetChunk())
-	}
-
-	file := File{id: id, name: fileName}
-	s.filesLock.Lock()
-	s.files[id] = file
-	s.filesLock.Unlock()
-
-	return nil
-}
-
-func (s *SnowcastService) FetchFile(request *pb.FileRequest, connection pb.Snowcast_FetchFileServer) error {
-	id := request.GetFileId()
-	s.filesLock.RLock()
-	file := s.files[id]
-	s.filesLock.RUnlock()
-
-	f, err := os.Open(FILES_FOLDER + file.id + file.name)
-	if err != nil {
-		return err
 	}
 
 	chunk := make([]byte, CHUNK_SIZE)
@@ -157,7 +124,7 @@ func (s *SnowcastService) FetchFile(request *pb.FileRequest, connection pb.Snowc
 			break
 		}
 
-		if err := connection.Send(&pb.FileChunk{
+		if err = connection.Send(&pb.FileChunk{
 			Chunk: chunk[:n],
 		}); err != nil {
 			return err
