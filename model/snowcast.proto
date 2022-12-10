@@ -29,8 +29,7 @@ enum MessageType {
 }
 
 message Notification {
-      MessageType type = 1;
-      optional int32 latestMsg = 2;
+      int32 latestMsg = 1;
 }
 
 message Message {
