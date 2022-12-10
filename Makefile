@@ -1,7 +1,7 @@
 proto:
 	protoc --go_out=. --go-grpc_out=. ./model/snowcast.proto 
-	protoc --js_out=import_style=commonjs:./client/src/ --grpc-web_out=import_style=commonjs,mode=grpcwebtext:./client/src/ ./model/snowcast.proto 
-	protoc --plugin=./client/node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./client/src ./model/snowcast.proto
+	protoc --plugin="protoc-gen-ts=./client/node_modules/.bin/protoc-gen-ts" --js_out="import_style=commonjs,binary:./client/src/" --ts_out="./client/src/" ./model/snowcast.proto
+	protoc --plugin="protoc-gen-ts=./client/node_modules/.bin/protoc-gen-ts" --js_out="import_style=commonjs,binary:./client/src/" --ts_out="service=grpc-web:./client/src/" ./model/snowcast.proto
 
 envoy:
 	cd client; docker build -t cs1680-final-project .; docker create --name cs1680-final-project -p 3333:3333 -p 9901:9901 cs1680-final-project; cd ..
