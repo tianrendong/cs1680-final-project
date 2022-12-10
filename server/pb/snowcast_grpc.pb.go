@@ -22,7 +22,6 @@ type SnowcastClient interface {
 	Connect(ctx context.Context, in *User, opts ...grpc.CallOption) (Snowcast_ConnectClient, error)
 	SendMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	FetchMessages(ctx context.Context, in *FetchRequest, opts ...grpc.CallOption) (*Messages, error)
-	SendMusic(ctx context.Context, in *Music, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	FetchMusic(ctx context.Context, in *Music, opts ...grpc.CallOption) (Snowcast_FetchMusicClient, error)
 }
 
@@ -84,15 +83,6 @@ func (c *snowcastClient) FetchMessages(ctx context.Context, in *FetchRequest, op
 	return out, nil
 }
 
-func (c *snowcastClient) SendMusic(ctx context.Context, in *Music, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/snowcast.Snowcast/SendMusic", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *snowcastClient) FetchMusic(ctx context.Context, in *Music, opts ...grpc.CallOption) (Snowcast_FetchMusicClient, error) {
 	stream, err := c.cc.NewStream(ctx, &Snowcast_ServiceDesc.Streams[1], "/snowcast.Snowcast/FetchMusic", opts...)
 	if err != nil {
@@ -132,7 +122,6 @@ type SnowcastServer interface {
 	Connect(*User, Snowcast_ConnectServer) error
 	SendMessage(context.Context, *Message) (*emptypb.Empty, error)
 	FetchMessages(context.Context, *FetchRequest) (*Messages, error)
-	SendMusic(context.Context, *Music) (*emptypb.Empty, error)
 	FetchMusic(*Music, Snowcast_FetchMusicServer) error
 	mustEmbedUnimplementedSnowcastServer()
 }
@@ -149,9 +138,6 @@ func (UnimplementedSnowcastServer) SendMessage(context.Context, *Message) (*empt
 }
 func (UnimplementedSnowcastServer) FetchMessages(context.Context, *FetchRequest) (*Messages, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FetchMessages not implemented")
-}
-func (UnimplementedSnowcastServer) SendMusic(context.Context, *Music) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SendMusic not implemented")
 }
 func (UnimplementedSnowcastServer) FetchMusic(*Music, Snowcast_FetchMusicServer) error {
 	return status.Errorf(codes.Unimplemented, "method FetchMusic not implemented")
@@ -226,24 +212,6 @@ func _Snowcast_FetchMessages_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Snowcast_SendMusic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Music)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(SnowcastServer).SendMusic(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/snowcast.Snowcast/SendMusic",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SnowcastServer).SendMusic(ctx, req.(*Music))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Snowcast_FetchMusic_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(Music)
 	if err := stream.RecvMsg(m); err != nil {
@@ -279,10 +247,6 @@ var Snowcast_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FetchMessages",
 			Handler:    _Snowcast_FetchMessages_Handler,
-		},
-		{
-			MethodName: "SendMusic",
-			Handler:    _Snowcast_SendMusic_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

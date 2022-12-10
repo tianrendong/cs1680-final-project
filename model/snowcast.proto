@@ -11,7 +11,6 @@ service Snowcast {
       rpc Connect (User) returns (stream Notification) {}
       rpc SendMessage (Message) returns (google.protobuf.Empty) {}
       rpc FetchMessages (FetchRequest) returns (Messages) {}
-      rpc SendMusic (Music) returns (google.protobuf.Empty) {}
       rpc FetchMusic (Music) returns (stream FileChunk) {}
 }
 
