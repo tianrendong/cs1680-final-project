@@ -1,56 +1,17 @@
-import { SnowcastClient } from "../model/snowcast_grpc_web_pb"
+import { SnowcastClient } from "../model/snowcast_pb_service"
+import { User, MessageUpdate, FetchRequest, Messages, Playlist, Message, MessageType, Music, FileChunk } from "../model/snowcast_pb"
+import * as google_protobuf_empty_pb from "google-protobuf/google/protobuf/empty_pb";
 import { concatTypedArrays } from "../utils/array";
-import { MessageDisplay } from "../App";
-import { messageType, fileTag } from "../model/model"
 
-const client = new SnowcastClient("http://localhost:3333", null, null)
-const CHUNK_SIZE = 1024
+const client = new SnowcastClient("http://localhost:3333")
 
-export async function sayHello(userId: string, addToMsgList: (m: MessageDisplay) => void) {
-      const request = new proto.snowcast.HelloRequest();
+export function connect(userId: string, handleMessageUpdate: (m: MessageUpdate) => void) {
+      const request = new User()
       request.setUserid(userId)
-      const stream = client.sayHello(request, null)
+      const stream = client.connect(request, null)
 
-      let buf = new Uint8Array(0)
-
-      stream.on("data", async (data: any) => {
-
-            if (data.getMsgtype() == messageType.TEXT) {
-                  addToMsgList({ From: data.getFrom(), MsgType: messageType.TEXT, Text: data.getStringmsg() })
-
-            } else if (data.getMsgtype() == messageType.SONG) {
-                  {
-                        if (data.getTag() == fileTag.START) {
-                              buf = new Uint8Array(0)
-                        }
-                        // console.log(data)
-                        buf = concatTypedArrays(buf, data.getFilecontent())
-
-                        if (data.getTag() == fileTag.END) {
-                              console.log(buf.length)
-                              const audioCtx = new AudioContext();
-                              const source = new AudioBufferSourceNode(audioCtx)
-                              source.buffer = await audioCtx.decodeAudioData(buf.buffer)
-                              console.log(source.buffer.duration)
-                              source.connect(audioCtx.destination)
-                              source.start()
-                              // addToMsgList({ From: data.getFrom(), MsgType: messageType.SONG, Music: source })
-
-                        }
-                  }
-
-            } else if (data.getMsgtype() == messageType.TEXTFILE) {
-                  console.log(data)
-                  if (data.getTag() == fileTag.START) {
-                        buf = new Uint8Array(0)
-                  }
-
-                  buf = concatTypedArrays(buf, data.getFilecontent())
-                  if (data.getTag() == fileTag.END) {
-                        addToMsgList({ From: data.getFrom(), MsgType: messageType.TEXTFILE, Text: data.getStringmsg(), TextFile: buf.toString() })
-
-                  }
-            }
+      stream.on("data", (update: MessageUpdate) => {
+            handleMessageUpdate(update)
       }
       );
 
@@ -63,41 +24,52 @@ export async function sayHello(userId: string, addToMsgList: (m: MessageDisplay)
       });
 }
 
-export async function broadcastMessage(userId: string, msg: string) {
-      const message = new proto.snowcast.Message
-      message.setFrom(userId)
-      message.setMsgtype(0)
-      message.setStringmsg(msg)
-      // message.setTime(Date.now())
+export function getPlaylist(handlePlaylist: (p: Playlist) => void) {
+      const request = new google_protobuf_empty_pb.Empty
+      client.getPlaylist(request, null, (err, response) => {
+            if (err) console.log(err)
+            if (response) handlePlaylist(response)
+      })
+}
 
-      client.broadcastMessage(message, null, (err) => {
+export function sendMessage(user: string, messageType: typeof MessageType.MESSAGE | typeof MessageType.MUSIC, message: string) {
+      const request = new Message()
+      request.setSender(user)
+      request.setType(messageType)
+      request.setMessage(message)
+      client.sendMessage(request, null, (err) => {
             if (err) console.log(err)
       })
 }
 
-export async function broadcastFile(userId: string, file: File, msgType: messageType) {
+export function fetchMessages(startIndex: number, handleMessages: (m: Messages) => void) {
+      const request = new FetchRequest()
+      request.setStartindex(startIndex)
+      client.fetchMessages(request, null, (err, response) => {
+            if (err) console.log(err)
+            if (response) handleMessages(response)
+      })
+}
 
-      for (let start = 0; start < file.size; start += CHUNK_SIZE) {
-            const buffer = file.slice(start, Math.min(start + CHUNK_SIZE, file.size))
-            const buf = await buffer.arrayBuffer()
-            const bufArray = new Uint8Array(buf)
+export function fetchMusic(music: string, handleMusic: (music: AudioBufferSourceNode) => void) {
+      const request = new Music()
+      request.setName(music)
+      const stream = client.fetchMusic(request, null)
 
-            const message = new proto.snowcast.Message
-            message.setFrom(userId)
-            message.setMsgtype(msgType)
-            message.setFilecontent(bufArray)
-            message.setStringmsg(file.name)
-            if (start == 0) {
-                  message.setTag(fileTag.START)
-            } else if (start + CHUNK_SIZE >= file.size) {
-                  message.setTag(fileTag.END)
-            } else {
-                  message.setTag(fileTag.UNRECOGNIZED)
-            }
+      let buf = new Uint8Array(0)
 
-            client.broadcastMessage(message, null, (err, response) => {
-                  console.log(start)
-                  if (err) console.log(err)
-            })
+      stream.on("data", (fileChunk: FileChunk) => {
+            buf = concatTypedArrays(buf, fileChunk.getChunk() as Uint8Array)
       }
+      );
+
+      stream.on("end", async function () {
+            const audioCtx = new AudioContext();
+            const source = new AudioBufferSourceNode(audioCtx)
+            source.buffer = await audioCtx.decodeAudioData(buf.buffer)
+            console.log(source.buffer.duration)
+            source.connect(audioCtx.destination)
+            handleMusic(source)
+      });
+
 }
