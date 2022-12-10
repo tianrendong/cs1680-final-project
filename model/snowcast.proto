@@ -8,7 +8,8 @@ import "google/protobuf/timestamp.proto";
 package snowcast;
 
 service Snowcast {
-      rpc Connect (User) returns (stream Notification) {}
+      rpc Connect (User) returns (stream MessageUpdate) {}
+      rpc GetPlaylist (google.protobuf.Empty) returns (Playlist) {}
       rpc SendMessage (Message) returns (google.protobuf.Empty) {}
       rpc FetchMessages (FetchRequest) returns (Messages) {}
       rpc FetchMusic (Music) returns (stream FileChunk) {}
@@ -16,6 +17,10 @@ service Snowcast {
 
 message User {
       string userId = 1;
+}
+
+message Playlist {
+      repeated Music playlist = 1;
 }
 
 message Music {
@@ -27,7 +32,7 @@ enum MessageType {
       MUSIC = 1;
 }
 
-message Notification {
+message MessageUpdate {
       int32 latestMsg = 1;
 }
 
