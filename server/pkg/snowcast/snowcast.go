@@ -20,7 +20,7 @@ const (
 
 type Connection struct {
 	userId string
-	conn   pb.Snowcast_ListenServer
+	conn   pb.Snowcast_ConnectServer
 	errCh  chan error
 }
 
@@ -50,7 +50,7 @@ func NewService() *SnowcastService {
 	}
 }
 
-func (s *SnowcastService) Listen(request *pb.UserInfo, connection pb.Snowcast_ListenServer) error {
+func (s *SnowcastService) Connect(request *pb.User, connection pb.Snowcast_ConnectServer) error {
 	log.Printf("User %v connected and listening\n", request.GetUserId())
 
 	conn := &Connection{
@@ -69,7 +69,7 @@ func (s *SnowcastService) Listen(request *pb.UserInfo, connection pb.Snowcast_Li
 }
 
 func (s *SnowcastService) SendMessage(ctx context.Context, message *pb.Message) (*emptypb.Empty, error) {
-	log.Printf("User %v sent message: %v\n", message.GetUserId(), message.GetMessage())
+	log.Printf("User %v sent message: %v\n", message.GetUser(), message.GetMessage())
 
 	s.msgLock.Lock()
 	s.messages = append(s.messages, message)

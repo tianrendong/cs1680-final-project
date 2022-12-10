@@ -8,32 +8,37 @@ import "google/protobuf/timestamp.proto";
 package snowcast;
 
 service Snowcast {
-      rpc Listen (UserInfo) returns (stream Notification) {}
+      rpc Connect (User) returns (stream Notification) {}
       rpc SendMessage (Message) returns (google.protobuf.Empty) {}
       rpc FetchMessages (FetchRequest) returns (Messages) {}
-      rpc SendFile (stream FileChunk) returns (google.protobuf.Empty) {}
-      rpc FetchFile (FileRequest) returns (stream FileChunk) {}
+      rpc SendMusic (Music) returns (google.protobuf.Empty) {}
+      rpc FetchMusic (Music) returns (stream FileChunk) {}
 }
 
-message UserInfo {
+message User {
       string userId = 1;
 }
 
-enum NotificationType {
+message Music {
+      string name = 1;
+}
+
+enum MessageType {
       MESSAGE = 0;
-      FILE = 1;
+      MUSIC = 1;
 }
 
 message Notification {
-      NotificationType type = 1;
+      MessageType type = 1;
       optional int32 latestMsg = 2;
-      optional string fileId = 3;
 }
 
 message Message {
-      string userId = 1;
-      string message = 2;
-      google.protobuf.Timestamp time = 3;
+      string sender = 1;
+      MessageType type = 2;
+      // message can be either text or song name
+      string message = 3;
+      google.protobuf.Timestamp time = 4;
 }
 
 message FetchRequest {
@@ -47,8 +52,4 @@ message Messages {
 message FileChunk {
       string fileName = 1;
       bytes chunk = 2;
-}
-
-message FileRequest {
-      string fileId = 1;
 }

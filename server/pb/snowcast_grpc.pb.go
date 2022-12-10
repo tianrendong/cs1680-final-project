@@ -19,11 +19,11 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SnowcastClient interface {
-	Listen(ctx context.Context, in *UserInfo, opts ...grpc.CallOption) (Snowcast_ListenClient, error)
+	Connect(ctx context.Context, in *User, opts ...grpc.CallOption) (Snowcast_ConnectClient, error)
 	SendMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	FetchMessages(ctx context.Context, in *FetchRequest, opts ...grpc.CallOption) (*Messages, error)
-	SendFile(ctx context.Context, opts ...grpc.CallOption) (Snowcast_SendFileClient, error)
-	FetchFile(ctx context.Context, in *FileRequest, opts ...grpc.CallOption) (Snowcast_FetchFileClient, error)
+	SendMusic(ctx context.Context, in *Music, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	FetchMusic(ctx context.Context, in *Music, opts ...grpc.CallOption) (Snowcast_FetchMusicClient, error)
 }
 
 type snowcastClient struct {
@@ -34,12 +34,12 @@ func NewSnowcastClient(cc grpc.ClientConnInterface) SnowcastClient {
 	return &snowcastClient{cc}
 }
 
-func (c *snowcastClient) Listen(ctx context.Context, in *UserInfo, opts ...grpc.CallOption) (Snowcast_ListenClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Snowcast_ServiceDesc.Streams[0], "/snowcast.Snowcast/Listen", opts...)
+func (c *snowcastClient) Connect(ctx context.Context, in *User, opts ...grpc.CallOption) (Snowcast_ConnectClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Snowcast_ServiceDesc.Streams[0], "/snowcast.Snowcast/Connect", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &snowcastListenClient{stream}
+	x := &snowcastConnectClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -49,16 +49,16 @@ func (c *snowcastClient) Listen(ctx context.Context, in *UserInfo, opts ...grpc.
 	return x, nil
 }
 
-type Snowcast_ListenClient interface {
+type Snowcast_ConnectClient interface {
 	Recv() (*Notification, error)
 	grpc.ClientStream
 }
 
-type snowcastListenClient struct {
+type snowcastConnectClient struct {
 	grpc.ClientStream
 }
 
-func (x *snowcastListenClient) Recv() (*Notification, error) {
+func (x *snowcastConnectClient) Recv() (*Notification, error) {
 	m := new(Notification)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -84,46 +84,21 @@ func (c *snowcastClient) FetchMessages(ctx context.Context, in *FetchRequest, op
 	return out, nil
 }
 
-func (c *snowcastClient) SendFile(ctx context.Context, opts ...grpc.CallOption) (Snowcast_SendFileClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Snowcast_ServiceDesc.Streams[1], "/snowcast.Snowcast/SendFile", opts...)
+func (c *snowcastClient) SendMusic(ctx context.Context, in *Music, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/snowcast.Snowcast/SendMusic", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &snowcastSendFileClient{stream}
-	return x, nil
+	return out, nil
 }
 
-type Snowcast_SendFileClient interface {
-	Send(*FileChunk) error
-	CloseAndRecv() (*emptypb.Empty, error)
-	grpc.ClientStream
-}
-
-type snowcastSendFileClient struct {
-	grpc.ClientStream
-}
-
-func (x *snowcastSendFileClient) Send(m *FileChunk) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *snowcastSendFileClient) CloseAndRecv() (*emptypb.Empty, error) {
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	m := new(emptypb.Empty)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *snowcastClient) FetchFile(ctx context.Context, in *FileRequest, opts ...grpc.CallOption) (Snowcast_FetchFileClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Snowcast_ServiceDesc.Streams[2], "/snowcast.Snowcast/FetchFile", opts...)
+func (c *snowcastClient) FetchMusic(ctx context.Context, in *Music, opts ...grpc.CallOption) (Snowcast_FetchMusicClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Snowcast_ServiceDesc.Streams[1], "/snowcast.Snowcast/FetchMusic", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &snowcastFetchFileClient{stream}
+	x := &snowcastFetchMusicClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -133,16 +108,16 @@ func (c *snowcastClient) FetchFile(ctx context.Context, in *FileRequest, opts ..
 	return x, nil
 }
 
-type Snowcast_FetchFileClient interface {
+type Snowcast_FetchMusicClient interface {
 	Recv() (*FileChunk, error)
 	grpc.ClientStream
 }
 
-type snowcastFetchFileClient struct {
+type snowcastFetchMusicClient struct {
 	grpc.ClientStream
 }
 
-func (x *snowcastFetchFileClient) Recv() (*FileChunk, error) {
+func (x *snowcastFetchMusicClient) Recv() (*FileChunk, error) {
 	m := new(FileChunk)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -154,11 +129,11 @@ func (x *snowcastFetchFileClient) Recv() (*FileChunk, error) {
 // All implementations must embed UnimplementedSnowcastServer
 // for forward compatibility
 type SnowcastServer interface {
-	Listen(*UserInfo, Snowcast_ListenServer) error
+	Connect(*User, Snowcast_ConnectServer) error
 	SendMessage(context.Context, *Message) (*emptypb.Empty, error)
 	FetchMessages(context.Context, *FetchRequest) (*Messages, error)
-	SendFile(Snowcast_SendFileServer) error
-	FetchFile(*FileRequest, Snowcast_FetchFileServer) error
+	SendMusic(context.Context, *Music) (*emptypb.Empty, error)
+	FetchMusic(*Music, Snowcast_FetchMusicServer) error
 	mustEmbedUnimplementedSnowcastServer()
 }
 
@@ -166,8 +141,8 @@ type SnowcastServer interface {
 type UnimplementedSnowcastServer struct {
 }
 
-func (UnimplementedSnowcastServer) Listen(*UserInfo, Snowcast_ListenServer) error {
-	return status.Errorf(codes.Unimplemented, "method Listen not implemented")
+func (UnimplementedSnowcastServer) Connect(*User, Snowcast_ConnectServer) error {
+	return status.Errorf(codes.Unimplemented, "method Connect not implemented")
 }
 func (UnimplementedSnowcastServer) SendMessage(context.Context, *Message) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendMessage not implemented")
@@ -175,11 +150,11 @@ func (UnimplementedSnowcastServer) SendMessage(context.Context, *Message) (*empt
 func (UnimplementedSnowcastServer) FetchMessages(context.Context, *FetchRequest) (*Messages, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FetchMessages not implemented")
 }
-func (UnimplementedSnowcastServer) SendFile(Snowcast_SendFileServer) error {
-	return status.Errorf(codes.Unimplemented, "method SendFile not implemented")
+func (UnimplementedSnowcastServer) SendMusic(context.Context, *Music) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendMusic not implemented")
 }
-func (UnimplementedSnowcastServer) FetchFile(*FileRequest, Snowcast_FetchFileServer) error {
-	return status.Errorf(codes.Unimplemented, "method FetchFile not implemented")
+func (UnimplementedSnowcastServer) FetchMusic(*Music, Snowcast_FetchMusicServer) error {
+	return status.Errorf(codes.Unimplemented, "method FetchMusic not implemented")
 }
 func (UnimplementedSnowcastServer) mustEmbedUnimplementedSnowcastServer() {}
 
@@ -194,24 +169,24 @@ func RegisterSnowcastServer(s grpc.ServiceRegistrar, srv SnowcastServer) {
 	s.RegisterService(&Snowcast_ServiceDesc, srv)
 }
 
-func _Snowcast_Listen_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(UserInfo)
+func _Snowcast_Connect_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(User)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(SnowcastServer).Listen(m, &snowcastListenServer{stream})
+	return srv.(SnowcastServer).Connect(m, &snowcastConnectServer{stream})
 }
 
-type Snowcast_ListenServer interface {
+type Snowcast_ConnectServer interface {
 	Send(*Notification) error
 	grpc.ServerStream
 }
 
-type snowcastListenServer struct {
+type snowcastConnectServer struct {
 	grpc.ServerStream
 }
 
-func (x *snowcastListenServer) Send(m *Notification) error {
+func (x *snowcastConnectServer) Send(m *Notification) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -251,50 +226,42 @@ func _Snowcast_FetchMessages_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Snowcast_SendFile_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(SnowcastServer).SendFile(&snowcastSendFileServer{stream})
-}
-
-type Snowcast_SendFileServer interface {
-	SendAndClose(*emptypb.Empty) error
-	Recv() (*FileChunk, error)
-	grpc.ServerStream
-}
-
-type snowcastSendFileServer struct {
-	grpc.ServerStream
-}
-
-func (x *snowcastSendFileServer) SendAndClose(m *emptypb.Empty) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func (x *snowcastSendFileServer) Recv() (*FileChunk, error) {
-	m := new(FileChunk)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
+func _Snowcast_SendMusic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Music)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return m, nil
+	if interceptor == nil {
+		return srv.(SnowcastServer).SendMusic(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/snowcast.Snowcast/SendMusic",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SnowcastServer).SendMusic(ctx, req.(*Music))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _Snowcast_FetchFile_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(FileRequest)
+func _Snowcast_FetchMusic_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(Music)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(SnowcastServer).FetchFile(m, &snowcastFetchFileServer{stream})
+	return srv.(SnowcastServer).FetchMusic(m, &snowcastFetchMusicServer{stream})
 }
 
-type Snowcast_FetchFileServer interface {
+type Snowcast_FetchMusicServer interface {
 	Send(*FileChunk) error
 	grpc.ServerStream
 }
 
-type snowcastFetchFileServer struct {
+type snowcastFetchMusicServer struct {
 	grpc.ServerStream
 }
 
-func (x *snowcastFetchFileServer) Send(m *FileChunk) error {
+func (x *snowcastFetchMusicServer) Send(m *FileChunk) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -313,21 +280,20 @@ var Snowcast_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "FetchMessages",
 			Handler:    _Snowcast_FetchMessages_Handler,
 		},
+		{
+			MethodName: "SendMusic",
+			Handler:    _Snowcast_SendMusic_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "Listen",
-			Handler:       _Snowcast_Listen_Handler,
+			StreamName:    "Connect",
+			Handler:       _Snowcast_Connect_Handler,
 			ServerStreams: true,
 		},
 		{
-			StreamName:    "SendFile",
-			Handler:       _Snowcast_SendFile_Handler,
-			ClientStreams: true,
-		},
-		{
-			StreamName:    "FetchFile",
-			Handler:       _Snowcast_FetchFile_Handler,
+			StreamName:    "FetchMusic",
+			Handler:       _Snowcast_FetchMusic_Handler,
 			ServerStreams: true,
 		},
 	},
