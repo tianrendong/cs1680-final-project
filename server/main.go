@@ -6,7 +6,7 @@ import (
 	"net"
 
 	pb "github.com/jennyyu212/cs1680-final-project/pb"
-	api "github.com/jennyyu212/cs1680-final-project/pkg/api"
+	"github.com/jennyyu212/cs1680-final-project/pkg/snowcast"
 	"google.golang.org/grpc"
 )
 
@@ -17,14 +17,12 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	s := grpc.NewServer()
-	service := &api.SnowcastService{
-		Connections: make(map[string]*api.Connection),
-	}
-	pb.RegisterSnowcastServer(s, service)
+	server := grpc.NewServer()
+	service := snowcast.NewService()
+	pb.RegisterSnowcastServer(server, service)
 
-	log.Printf("server listening at %v", listener.Addr())
-	if err := s.Serve(listener); err != nil {
+	log.Printf("server listening on %v", listener.Addr())
+	if err := server.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
 }
