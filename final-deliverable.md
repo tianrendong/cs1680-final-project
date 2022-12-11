@@ -4,11 +4,11 @@
 ## Project Introduction
 The goal of the project is to understand what gRPC is, how it works with web clients, and implement a small application using gRPC and React. Our initial plan was to use this tech stack to implement Snowcast, but the plan changed as we discovered the various limitations related to streaming (see section on Challenges). Eventually, we implemented a chat app with server-side streaming, where users can send each other text messages and music that is available on the server. Music can be played out in browsers. 
 
-The README contains detailed information about building and running the application.
+The README on Github contains detailed information about building and running the application.
 
-## Demo
+[Github Repo](https://github.com/jennyyu212/cs1680-final-project)
 
-https://user-images.githubusercontent.com/52697551/206933836-33d26b4b-6c89-4640-b3eb-daecc10facce.mp4
+[Demo Video](https://user-images.githubusercontent.com/52697551/206933836-33d26b4b-6c89-4640-b3eb-daecc10facce.mp4)
 
 ## gRPC & gRPC for web client
 gRPC is a framework for Remote Procedure Call (RPC). Based on our understanding and usage so far, it has two primary advantages: 
