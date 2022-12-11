@@ -6,17 +6,23 @@
       border-radius: 20px;
       background-color: white;
       padding: 10px;
-      justify-content: space-between;
 
-      .username {
-            display: flex;
-            justify-content: flex-end;
-            font-size: 14px;
-            color: grey;
-            margin: 10px;
+      .top {
+            min-height: 5%;
+
+            .username {
+                  display: flex;
+                  justify-content: flex-end;
+                  font-size: 14px;
+                  color: grey;
+                  margin: 10px;
+            }
+
       }
 
       .messages {
+            overflow: scroll;
+
             .message-wrapper {
                   width: 100%;
                   display: flex;
@@ -27,6 +33,8 @@
             max-height: 40%;
             display: flex;
             flex-direction: column;
+            margin-top: auto;
+            margin-bottom: 4px;
 
             .send-message {
                   display: flex;
