@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/jennyyu212/cs1680-final-project/pb"
@@ -81,8 +83,10 @@ func (s *SnowcastService) GetPlaylist(ctx context.Context, in *emptypb.Empty) (*
 	}
 
 	for _, file := range files {
+		filename := strings.TrimSuffix(file.Name(), filepath.Ext(file.Name()))
+
 		playlist.Playlist = append(playlist.Playlist, &pb.Music{
-			Name: MUSIC_FOLDER + file.Name(),
+			Name: filename,
 		})
 	}
 
@@ -130,7 +134,7 @@ func (s *SnowcastService) FetchMessages(ctx context.Context, request *pb.FetchRe
 }
 
 func (s *SnowcastService) FetchMusic(request *pb.Music, connection pb.Snowcast_FetchMusicServer) error {
-	f, e := os.Open(request.GetName())
+	f, e := os.Open(MUSIC_FOLDER + request.GetName() + ".mp3")
 	if e != nil {
 		return e
 	}

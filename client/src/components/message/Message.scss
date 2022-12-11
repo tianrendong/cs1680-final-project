@@ -1,0 +1,83 @@
+.sender {
+      font-size: 12px;
+      color: #808080;
+}
+
+.text-message {
+      display: flex;
+      flex-direction: column;
+      margin: 10px 0;
+
+      .bodytext {
+            font-size: 18px;
+            background-color: #e6e6e6;
+            width: 60%;
+            border-radius: 8px;
+            padding: 5px 12px 5px 12px;
+            margin: 3px 0;
+      }
+}
+
+.music-message {
+      display: flex;
+      flex-direction: column;
+      margin: 10px 0;
+
+      .bodytext {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            font-size: 18px;
+            height: 40px;
+            background-color: #e6e6e6;
+            width: 60%;
+            border-radius: 8px;
+            padding: 5px 12px 5px 12px;
+            margin: 3px 0;
+
+            .play-icon {
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  height: 100%;
+                  margin-right: 10px;
+
+                  .stroke-solid {
+                        stroke-dashoffset: 0;
+                        stroke-dashArray: 300;
+                        stroke-width: 4px;
+                        transition: stroke-dashoffset 1s ease,
+                              opacity 1s ease;
+                  }
+
+                  .icon {
+                        transform: scale(.8);
+                        transform-origin: 50% 50%;
+                        transition: transform 200ms ease-out;
+                  }
+
+                  // Hover
+                  #play:hover {
+                        // .stroke-solid {
+                        //       opacity: 1;
+                        //       stroke-dashoffset: 300;
+                        // }
+
+                        .stroke-solid {
+                              stroke-width: 5px;
+                        }
+
+                        .icon {
+                              transform: scale(.9);
+                        }
+                  }
+
+                  #play {
+                        cursor: pointer;
+                  }
+
+            }
+
+      }
+
+}
