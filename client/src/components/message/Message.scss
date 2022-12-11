@@ -28,7 +28,7 @@
             display: flex;
             flex-direction: row;
             align-items: center;
-            font-size: 18px;
+            font-size: 16px;
             height: 40px;
             background-color: #e6e6e6;
             border-radius: 8px;
@@ -42,40 +42,35 @@
                   height: 100%;
                   margin-right: 10px;
 
-                  .stroke-solid {
-                        stroke-dashoffset: 0;
-                        stroke-dashArray: 300;
-                        stroke-width: 4px;
-                        transition: stroke-dashoffset 1s ease,
-                              opacity 1s ease;
-                  }
+                  svg {
+                        overflow: visible;
 
-                  .icon {
-                        transform: scale(.8);
-                        transform-origin: 50% 50%;
-                        transition: transform 200ms ease-out;
-                  }
+                        &:hover {
+                              .circle:hover {
+                                    stroke-width: 10px;
+                              }
 
-                  // Hover
-                  #play:hover {
-                        // .stroke-solid {
-                        //       opacity: 1;
-                        //       stroke-dashoffset: 300;
-                        // }
-
-                        .stroke-solid {
-                              stroke-width: 5px;
+                              .center:hover {
+                                    transform: scale(1.1);
+                                    transform-origin: 50% 50%;
+                                    transition: transform 200ms ease-out;
+                              }
                         }
 
-                        .icon {
-                              transform: scale(.9);
-                        }
                   }
 
-                  #play {
-                        cursor: pointer;
-                  }
 
+            }
+
+            .text {
+                  display: flex;
+                  flex-direction: column;
+
+                  .loading {
+                        font-size: 12px;
+                        color: #808080;
+                        margin: 3px 0 2px 0;
+                  }
             }
 
       }

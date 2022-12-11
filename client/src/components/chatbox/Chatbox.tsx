@@ -41,20 +41,23 @@ function Chatbox(props: ChatboxProps) {
       }
 
       return <div className="chatbox">
-            <div className="username">logged in as {username}</div>
-            <div className="messages">
-                  {props.msgList.map((msg: Message, index: number) =>
-                        <div key={`msg-${index}`} className="message-wrapper" style={{ justifyContent: msg.getSender() === username ? "flex-end" : "flex-start" }}>
-                              {msg.getType() === MessageType.MESSAGE && <TextMessage Message={msg} />}
-                              {msg.getType() === MessageType.MUSIC && <MusicMessage Message={msg} />}
-                        </div>
-                  )
-                  }
+            <div className="top">
+                  <div className="username">logged in as {username}</div>
+                  <div className="messages">
+                        {props.msgList.map((msg: Message, index: number) =>
+                              <div key={`msg-${index}`} className="message-wrapper" style={{ justifyContent: msg.getSender() === username ? "flex-end" : "flex-start" }}>
+                                    {msg.getType() === MessageType.MESSAGE && <TextMessage Message={msg} />}
+                                    {msg.getType() === MessageType.MUSIC && <MusicMessage Message={msg} />}
+                              </div>
+                        )
+                        }
+                  </div>
             </div>
+
             <div className="bottom">
                   <div className="send-message">
                         <input
-                              placeholder="send message"
+                              placeholder="press enter to send message"
                               value={msgToSend}
                               onFocus={() => { setShowPlaylist(false) }}
                               onChange={(e) => { setMsgToSend(e.target.value as string) }}

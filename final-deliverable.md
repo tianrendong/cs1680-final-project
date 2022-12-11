@@ -64,9 +64,10 @@ Some new features that we thought of implementing include
 - Graceful exits with notifications to other clients
 - A more robust login system such that users will be able to reconnect to their same account
 - Ability to send messages to individuals instead of broadcasting
-- Prettier frontend :>
+- Progress bar for fetching music
+- Some non-system related, user experience improvements: prettier frontend, ability to pause and resume music, etc. :>
 
-The way our current services are set up and gRPC's protocol buffers make extending these features relatively easy. For example, we can just add a receiver field in our Message struct for sending message to individuals. 
+The way our current services are set up and gRPC's protocol buffers make extending these features relatively easy. For example, to support sending message to individuals, we would add a receiver field in our Message struct. For implementing a progress bar when fetching music, we would include a total length field and a current index field inside the music chunks that are sent. Graceful exit would require an additional service definition that requests the server to delete the client connection. 
 
 2. Infrastructure
 
