@@ -54,12 +54,13 @@ func (s *SnowcastService) Connect(request *pb.User, connection pb.Snowcast_Conne
 	}
 
 	s.connectionsLock.Lock()
-	defer s.connectionsLock.Unlock()
 	if _, ok := s.connections[request.GetUserId()]; !ok {
 		s.connections[request.UserId] = conn
 	} else {
+		s.connectionsLock.Unlock()
 		return fmt.Errorf("user with id %v already exists", request.GetUserId())
 	}
+	s.connectionsLock.Unlock()
 
 	e := <-conn.errCh
 	log.Printf("User %v disconnected\n", request.GetUserId())
@@ -117,6 +118,8 @@ func (s *SnowcastService) SendMessage(ctx context.Context, message *pb.Message) 
 		}()
 	}
 	wg.Wait()
+
+	log.Printf("Notified all %v users\n", len(s.connections))
 
 	return &emptypb.Empty{}, nil
 }
