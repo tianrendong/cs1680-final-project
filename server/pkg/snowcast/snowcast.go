@@ -124,7 +124,6 @@ func (s *SnowcastService) FetchMessages(ctx context.Context, request *pb.FetchRe
 	if request.GetStartIndex() >= int32(len(s.messages)) {
 		return nil, fmt.Errorf("start index %v is out of range %v", request.GetStartIndex(), len(s.messages))
 	}
-
 	return &pb.Messages{
 		Messages: s.messages[request.GetStartIndex():],
 	}, nil

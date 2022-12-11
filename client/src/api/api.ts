@@ -8,7 +8,7 @@ const client = new SnowcastClient("http://localhost:3333")
 export function connect(userId: string, handleMessageUpdate: (m: MessageUpdate) => void) {
       const request = new User()
       request.setUserid(userId)
-      const stream = client.connect(request, null)
+      const stream = client.connect(request)
 
       stream.on("data", (update: MessageUpdate) => {
             handleMessageUpdate(update)
@@ -27,7 +27,7 @@ export function connect(userId: string, handleMessageUpdate: (m: MessageUpdate) 
 export function getPlaylist(): Promise<Music[]> {
       const request = new google_protobuf_empty_pb.Empty
       return new Promise((resolve, reject) => {
-            client.getPlaylist(request, null, (err, response) => {
+            client.getPlaylist(request, (err, response) => {
                   if (err) reject(err)
                   resolve(response ? response.getPlaylistList() : [])
             })
@@ -35,21 +35,26 @@ export function getPlaylist(): Promise<Music[]> {
 }
 
 
-export function sendMessage(user: string, messageType: typeof MessageType.MESSAGE | typeof MessageType.MUSIC, message: string) {
+export async function sendMessage(user: string, messageType: typeof MessageType.MESSAGE | typeof MessageType.MUSIC, message: string): Promise<void> {
       const request = new Message()
       request.setSender(user)
       request.setType(messageType)
       request.setMessage(message)
-      client.sendMessage(request, null, (err) => {
-            if (err) console.log(err)
+      return new Promise((resolve, reject) => {
+            client.sendMessage(request, (err) => {
+                  if (err) reject(err)
+                  resolve()
+            })
       })
 }
 
 export async function fetchMessages(startIndex: number): Promise<Message[]> {
+      console.log("fetching message from" + startIndex)
       const request = new FetchRequest()
       request.setStartindex(startIndex)
       return new Promise((resolve, reject) => {
-            client.fetchMessages(request, null, async (err, response) => {
+            client.fetchMessages(request, async (err, response) => {
+                  console.log(response)
                   if (err) reject(err)
                   resolve(response ? response.getMessagesList() : [])
             })
@@ -61,7 +66,7 @@ export async function fetchMusic(music: string): Promise<AudioBufferSourceNode> 
       const request = new Music()
       request.setName(music)
       return new Promise<AudioBufferSourceNode>((resolve) => {
-            const stream = client.fetchMusic(request, null)
+            const stream = client.fetchMusic(request)
 
             let buf = new Uint8Array(0)
 

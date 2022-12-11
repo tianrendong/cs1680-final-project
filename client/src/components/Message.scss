@@ -1,0 +1,24 @@
+.text-message {
+      display: flex;
+      flex-direction: column;
+      margin: 10px;
+
+      .sender {
+            font-size: 12px;
+            color: grey;
+
+      }
+
+      .bodytext {
+            font-size: 18px;
+            background-color: #e6e6e6;
+            width: 60%;
+            border-radius: 8px;
+            padding: 5px 12px 5px 12px;
+            margin: 3px 0;
+      }
+}
+
+.music-message {
+      display: flex
+}
