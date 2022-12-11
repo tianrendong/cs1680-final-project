@@ -1,75 +1,63 @@
 import './App.css'
 import { useRef, useState, useEffect } from "react"
-import { sayHello, broadcastMessage, broadcastFile } from "./api/api"
-import { messageType } from './model/model';
-import TextFile from './components/TextFile';
-
-export interface MessageDisplay {
-  From: string;
-  MsgType: messageType;
-  Text?: string,
-  Music?: AudioBufferSourceNode,
-  TextFile?: string,
-}
+import { User, MessageUpdate, MessageType, Message, Messages, Music } from "./model/snowcast_pb"
+import { connect, fetchMessages, getPlaylist, sendMessage } from "./api/api"
+import { TextMessage, MusicMessage } from './components/Message';
 
 
 function App() {
   const [username, setUsername] = useState<string>("")
-  const [message, setMessage] = useState<string>("")
-  const [file, setFile] = useState<File | null>(null)
+  const [msgToSend, setMsgToSend] = useState<string>("")
+  const [msgList, setMsgList] = useState<Message[]>([]);
+  const [playlist, setPlaylist] = useState<Music[]>([]);
+  const [latestMsgFetched, setLatestMsgFetched] = useState<number>(0)
 
-  const [msgList, setMsgList] = useState<MessageDisplay[]>([]);
-
-  function handleLogin() {
-    sayHello(username, addToMsgList)
+  async function handleLogin() {
+    connect(username, handleMessageUpdate)
+    console.log("got here")
+    getPlaylist()
+      .then((playlist: Music[]) => {
+        setPlaylist(playlist)
+      })
+      .catch((err) => console.log(err))
   }
 
-  function addToMsgList(msg: MessageDisplay) {
-    setMsgList(msgList => [...msgList, msg])
+  function sendTextMessage(msg: string) {
+    sendMessage(username, MessageType.MESSAGE, msg)
   }
 
-  function sendMessage(msg: string) {
-    broadcastMessage(username, msg)
+  function sendMusic(music: string) {
+    sendMessage(username, MessageType.MUSIC, music)
   }
 
-  function handleUpload() {
-    if (file) {
-      const fileType = file.type.split("/")[0]
-      if (fileType == "text") {
-        broadcastFile(username, file, messageType.TEXTFILE)
-      } else if (fileType == "audio") {
-        broadcastFile(username, file, messageType.SONG)
-      }
+  async function handleMessageUpdate(update: MessageUpdate) {
+    if (update.getLatestmsg() > latestMsgFetched) {
+      fetchMessages(latestMsgFetched + 1)
+        .then((messages: Message[]) => {
+          setMsgList(msgList.concat(messages))
+        })
+        .catch((err) => console.log(err))
     }
   }
 
   return (
     <div>
-
       <h1>log in</h1>
       <input placeholder="Enter username" onChange={(e) => { setUsername(e.target.value as string) }}></input>
       <button onClick={handleLogin}>Log in</button>
 
       <h1>messages</h1>
       {msgList.map((msg, index) =>
-        <div key={index}>
-          <div> {msg.From}: </div>
-          {msg.MsgType == messageType.TEXTFILE ? <TextFile Msg={msg} /> : ""}
-          {msg.MsgType == messageType.TEXT ? msg.Text : ""}
+        <div>
+          {msg.getType() == MessageType.MESSAGE && <TextMessage Message={msg} />}
+          {msg.getType() == MessageType.MUSIC && <MusicMessage Message={msg} />}
         </div>
-
-      )}
+      )
+      }
 
       <h1>send messages</h1>
-      <input placeholder="Enter message" onChange={(e) => { setMessage(e.target.value as string) }}></input>
-      <button onClick={() => { sendMessage(message) }}>send message</button>
-
-      <input
-        type="file"
-        accept="audio/mpeg3,.txt"
-        onChange={(e) => { setFile(e.target!.files![0]) }}
-      />
-      <button onClick={handleUpload}>send file</button>
+      <input placeholder="Enter message" onChange={(e) => { setMsgToSend(e.target.value as string) }}></input>
+      <button onClick={() => { sendTextMessage(msgToSend) }}>send message</button>
     </div>
   );
 }
