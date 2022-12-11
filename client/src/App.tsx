@@ -1,5 +1,5 @@
 import './App.scss'
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { MessageUpdate, Message } from "./model/snowcast_pb"
 import { fetchMessages } from "./api/api"
 import Login from './components/login/Login'

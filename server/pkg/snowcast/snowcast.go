@@ -127,6 +127,7 @@ func (s *SnowcastService) SendMessage(ctx context.Context, message *pb.Message) 
 	}
 
 	var wg sync.WaitGroup
+	s.connectionsLock.RLock()
 	for _, conn := range s.connections {
 		wg.Add(1)
 		c := conn
@@ -137,6 +138,7 @@ func (s *SnowcastService) SendMessage(ctx context.Context, message *pb.Message) 
 			wg.Done()
 		}()
 	}
+	s.connectionsLock.RUnlock()
 	wg.Wait()
 
 	log.Printf("Notified all %v users\n", len(s.connections))
