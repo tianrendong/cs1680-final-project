@@ -4,10 +4,8 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 
@@ -16,8 +14,9 @@ import (
 )
 
 const (
-	CHUNK_SIZE   = 1024
-	MUSIC_FOLDER = "./mp3/"
+	CHUNK_SIZE     = 1024
+	MUSIC_FOLDER   = "./mp3/"
+	MUSIC_FILE_EXT = ".mp3"
 )
 
 type Connection struct {
@@ -97,7 +96,12 @@ func (s *SnowcastService) Connect(request *pb.User, connection pb.Snowcast_Conne
 }
 
 func (s *SnowcastService) GetPlaylist(ctx context.Context, in *emptypb.Empty) (*pb.Playlist, error) {
-	files, err := ioutil.ReadDir(MUSIC_FOLDER)
+	dir, err := os.Open(MUSIC_FOLDER)
+	if err != nil {
+		log.Printf("Error opening music folder: %v\n", err)
+		return &pb.Playlist{}, err
+	}
+	files, err := dir.Readdir(0)
 	if err != nil {
 		log.Printf("Error reading music folder: %v\n", err)
 		return &pb.Playlist{}, err
@@ -108,7 +112,7 @@ func (s *SnowcastService) GetPlaylist(ctx context.Context, in *emptypb.Empty) (*
 	}
 
 	for _, file := range files {
-		filename := strings.TrimSuffix(file.Name(), filepath.Ext(file.Name()))
+		filename := strings.TrimSuffix(file.Name(), MUSIC_FILE_EXT)
 
 		playlist.Playlist = append(playlist.Playlist, &pb.Music{
 			Name: filename,
@@ -167,7 +171,7 @@ func (s *SnowcastService) FetchMessages(ctx context.Context, request *pb.FetchRe
 func (s *SnowcastService) FetchMusic(request *pb.Music, connection pb.Snowcast_FetchMusicServer) error {
 	log.Printf("Fetching music %v\n", request.GetName())
 
-	f, e := os.Open(MUSIC_FOLDER + request.GetName() + ".mp3")
+	f, e := os.Open(MUSIC_FOLDER + request.GetName() + MUSIC_FILE_EXT)
 	if e != nil {
 		return e
 	}
