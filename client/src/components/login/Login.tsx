@@ -1,9 +1,9 @@
 import "./Login.scss"
-import React, { useRef, useState, useEffect } from "react"
+import React, { useState } from "react"
 import { connect, getPlaylist } from "../../api/api"
 import { MessageUpdate, Music } from "../../model/snowcast_pb"
-import LoginIcon from '@mui/icons-material/Login';
-import IconButton from '@mui/material/IconButton';
+import LoginIcon from '@mui/icons-material/Login'
+import IconButton from '@mui/material/IconButton'
 
 interface LoginProps {
       handleMessageUpdate: (update: MessageUpdate) => void

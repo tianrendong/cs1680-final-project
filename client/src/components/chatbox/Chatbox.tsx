@@ -1,11 +1,11 @@
 import "./Chatbox.scss";
 import { useState } from "react";
 import { Message, MessageType } from "../../model/snowcast_pb"
-import { MusicMessage, TextMessage } from "../message/Message";
-import QueueMusicIcon from '@mui/icons-material/QueueMusic';
-import IconButton from '@mui/material/IconButton';
-import SendIcon from '@mui/icons-material/Send';
-import { sendMessage } from "../../api/api";
+import { MusicMessage, TextMessage } from "../message/Message"
+import QueueMusicIcon from '@mui/icons-material/QueueMusic'
+import IconButton from '@mui/material/IconButton'
+import SendIcon from '@mui/icons-material/Send'
+import { sendMessage } from "../../api/api"
 
 interface ChatboxProps {
       msgList: Message[]
