@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SnowcastClient interface {
 	Connect(ctx context.Context, in *User, opts ...grpc.CallOption) (Snowcast_ConnectClient, error)
+	GetPlaylist(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*Playlist, error)
 	SendMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	FetchMessages(ctx context.Context, in *FetchRequest, opts ...grpc.CallOption) (*Messages, error)
 	FetchMusic(ctx context.Context, in *Music, opts ...grpc.CallOption) (Snowcast_FetchMusicClient, error)
@@ -49,7 +50,7 @@ func (c *snowcastClient) Connect(ctx context.Context, in *User, opts ...grpc.Cal
 }
 
 type Snowcast_ConnectClient interface {
-	Recv() (*Notification, error)
+	Recv() (*MessageUpdate, error)
 	grpc.ClientStream
 }
 
@@ -57,12 +58,21 @@ type snowcastConnectClient struct {
 	grpc.ClientStream
 }
 
-func (x *snowcastConnectClient) Recv() (*Notification, error) {
-	m := new(Notification)
+func (x *snowcastConnectClient) Recv() (*MessageUpdate, error) {
+	m := new(MessageUpdate)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
+}
+
+func (c *snowcastClient) GetPlaylist(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*Playlist, error) {
+	out := new(Playlist)
+	err := c.cc.Invoke(ctx, "/snowcast.Snowcast/GetPlaylist", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *snowcastClient) SendMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*emptypb.Empty, error) {
@@ -120,6 +130,7 @@ func (x *snowcastFetchMusicClient) Recv() (*FileChunk, error) {
 // for forward compatibility
 type SnowcastServer interface {
 	Connect(*User, Snowcast_ConnectServer) error
+	GetPlaylist(context.Context, *emptypb.Empty) (*Playlist, error)
 	SendMessage(context.Context, *Message) (*emptypb.Empty, error)
 	FetchMessages(context.Context, *FetchRequest) (*Messages, error)
 	FetchMusic(*Music, Snowcast_FetchMusicServer) error
@@ -132,6 +143,9 @@ type UnimplementedSnowcastServer struct {
 
 func (UnimplementedSnowcastServer) Connect(*User, Snowcast_ConnectServer) error {
 	return status.Errorf(codes.Unimplemented, "method Connect not implemented")
+}
+func (UnimplementedSnowcastServer) GetPlaylist(context.Context, *emptypb.Empty) (*Playlist, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPlaylist not implemented")
 }
 func (UnimplementedSnowcastServer) SendMessage(context.Context, *Message) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendMessage not implemented")
@@ -164,7 +178,7 @@ func _Snowcast_Connect_Handler(srv interface{}, stream grpc.ServerStream) error 
 }
 
 type Snowcast_ConnectServer interface {
-	Send(*Notification) error
+	Send(*MessageUpdate) error
 	grpc.ServerStream
 }
 
@@ -172,8 +186,26 @@ type snowcastConnectServer struct {
 	grpc.ServerStream
 }
 
-func (x *snowcastConnectServer) Send(m *Notification) error {
+func (x *snowcastConnectServer) Send(m *MessageUpdate) error {
 	return x.ServerStream.SendMsg(m)
+}
+
+func _Snowcast_GetPlaylist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SnowcastServer).GetPlaylist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/snowcast.Snowcast/GetPlaylist",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SnowcastServer).GetPlaylist(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Snowcast_SendMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -240,6 +272,10 @@ var Snowcast_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "snowcast.Snowcast",
 	HandlerType: (*SnowcastServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetPlaylist",
+			Handler:    _Snowcast_GetPlaylist_Handler,
+		},
 		{
 			MethodName: "SendMessage",
 			Handler:    _Snowcast_SendMessage_Handler,

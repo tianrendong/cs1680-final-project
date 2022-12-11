@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"sync"
@@ -13,7 +14,8 @@ import (
 )
 
 const (
-	CHUNK_SIZE = 1024
+	CHUNK_SIZE   = 1024
+	MUSIC_FOLDER = "./mp3/"
 )
 
 type Connection struct {
@@ -67,6 +69,26 @@ func (s *SnowcastService) Connect(request *pb.User, connection pb.Snowcast_Conne
 	return e
 }
 
+func (s *SnowcastService) GetPlaylist(ctx context.Context, in *emptypb.Empty) (*pb.Playlist, error) {
+	files, err := ioutil.ReadDir(MUSIC_FOLDER)
+	if err != nil {
+		log.Printf("Error reading music folder: %v\n", err)
+		return &pb.Playlist{}, err
+	}
+
+	playlist := &pb.Playlist{
+		Playlist: make([]*pb.Music, 0),
+	}
+
+	for _, file := range files {
+		playlist.Playlist = append(playlist.Playlist, &pb.Music{
+			Name: MUSIC_FOLDER + file.Name(),
+		})
+	}
+
+	return playlist, nil
+}
+
 func (s *SnowcastService) SendMessage(ctx context.Context, message *pb.Message) (*emptypb.Empty, error) {
 	log.Printf("User %v sent message: %v\n", message.GetSender(), message.GetMessage())
 
@@ -75,7 +97,7 @@ func (s *SnowcastService) SendMessage(ctx context.Context, message *pb.Message) 
 	s.latestIndex++
 	s.msgLock.Unlock()
 
-	notification := &pb.Notification{
+	update := &pb.MessageUpdate{
 		LatestMsg: int32(s.latestIndex),
 	}
 
@@ -84,7 +106,7 @@ func (s *SnowcastService) SendMessage(ctx context.Context, message *pb.Message) 
 		wg.Add(1)
 		c := conn
 		go func() {
-			if e := c.stream.Send(notification); e != nil {
+			if e := c.stream.Send(update); e != nil {
 				c.errCh <- e
 			}
 			wg.Done()
