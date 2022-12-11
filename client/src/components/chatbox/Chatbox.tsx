@@ -13,18 +13,18 @@ interface ChatboxProps {
 }
 
 function Chatbox(props: ChatboxProps) {
-      const username = window.localStorage.getItem("username")
+      const username = sessionStorage.getItem("username")
       const [msgToSend, setMsgToSend] = useState<string>("")
       const [showPlaylist, setShowPlaylist] = useState<boolean>(false)
 
       function sendMusic(music: string) {
-            const username = window.localStorage.getItem("username")
+            const username = sessionStorage.getItem("username")
             username && sendMessage(username, MessageType.MUSIC, music).then(() => setShowPlaylist(false))
       }
 
 
       function sendTextMessage() {
-            const username = window.localStorage.getItem("username")
+            const username = sessionStorage.getItem("username")
             username && sendMessage(username, MessageType.MESSAGE, msgToSend)
                   .then(() => { setMsgToSend("") })
       }
@@ -35,7 +35,7 @@ function Chatbox(props: ChatboxProps) {
                   if (msgToSend === "") {
                         return
                   }
-                  const username = window.localStorage.getItem("username")
+                  const username = sessionStorage.getItem("username")
                   username && sendTextMessage()
             }
       }

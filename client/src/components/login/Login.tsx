@@ -15,7 +15,7 @@ function Login(props: LoginProps) {
 
       async function handleLogin() {
             connect(username, props.handleMessageUpdate)
-            window.localStorage.setItem("username", username.toString());
+            sessionStorage.setItem("username", username.toString());
             getPlaylist()
                   .then((playlist: Music[]) => {
                         props.setPlaylist(playlist.map(music => music.getName()))

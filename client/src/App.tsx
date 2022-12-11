@@ -11,11 +11,6 @@ function App() {
   const [playlist, setPlaylist] = useState<string[]>([])
   const [nextMsg, setNextMsg] = useState<number>(0)
 
-  useEffect(() => {
-    window.localStorage.clear()
-  }, [])
-
-
   async function handleMessageUpdate(update: MessageUpdate) {
     console.log(update.getLatestmsg())
     if (update.getLatestmsg() >= nextMsg) {
@@ -32,7 +27,7 @@ function App() {
 
   return (
     <div className="container">
-      {window.localStorage.getItem("username") == null ?
+      {sessionStorage.getItem("username") == null ?
         <Login handleMessageUpdate={handleMessageUpdate} setPlaylist={setPlaylist} /> :
         <Chatbox msgList={msgList} playlist={playlist} />}
     </div>
