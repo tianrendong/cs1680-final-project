@@ -14,6 +14,10 @@ function App() {
   const [playlist, setPlaylist] = useState<string[]>([]);
   const [nextMsg, setNextMsg] = useState<number>(0)
 
+  useEffect(() => {
+    window.localStorage.clear()
+  }, [])
+
 
   async function handleMessageUpdate(update: MessageUpdate) {
     console.log(update.getLatestmsg())
@@ -31,10 +35,9 @@ function App() {
 
   return (
     <div className="container">
-      <Login handleMessageUpdate={handleMessageUpdate} setPlaylist={setPlaylist} />
-
-      <Chatbox msgList={msgList} playlist={playlist} />
-
+      {window.localStorage.getItem("username") == null ?
+        <Login handleMessageUpdate={handleMessageUpdate} setPlaylist={setPlaylist} /> :
+        <Chatbox msgList={msgList} playlist={playlist} />}
     </div>
 
   );

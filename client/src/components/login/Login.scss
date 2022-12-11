@@ -1,0 +1,16 @@
+.login {
+      display: flex;
+      flex-direction: row;
+
+      .input-box {
+            width: 100%;
+            border-radius: 3px;
+            border: 0.5px solid #808080;
+            box-shadow: none;
+            padding: 10px;
+
+            &:focus {
+                  outline: none;
+            }
+      }
+}

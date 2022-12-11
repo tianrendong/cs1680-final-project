@@ -1,6 +1,9 @@
+import "./Login.scss"
 import React, { useRef, useState, useEffect } from "react"
 import { connect, getPlaylist } from "../../api/api"
 import { MessageUpdate, Music } from "../../model/snowcast_pb"
+import LoginIcon from '@mui/icons-material/Login';
+import IconButton from '@mui/material/IconButton';
 
 interface LoginProps {
       handleMessageUpdate: (update: MessageUpdate) => void
@@ -19,12 +22,12 @@ function Login(props: LoginProps) {
                   .catch((err) => console.log(err))
       }
 
-      return window.localStorage.getItem("username") == null ?
-            <div>
-                  <input placeholder="Enter username" onChange={(e) => { setUsername(e.target.value as string) }}></input>
-                  <button onClick={handleLogin}>Log in</button>
-            </div> :
-            <div>Logged in as {window.localStorage.getItem("username")}</div>
+      return <div className="login">
+            <input className="input-box" placeholder="Enter username" onChange={(e) => { setUsername(e.target.value as string) }}></input>
+            <IconButton onClick={handleLogin} color="primary" aria-label="upload picture" component="label">
+                  <LoginIcon sx={{ color: '#808080' }} />
+            </IconButton>
+      </div>
 
 }
 
