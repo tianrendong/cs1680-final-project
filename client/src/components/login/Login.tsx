@@ -9,6 +9,7 @@ interface LoginProps {
       handleMessageUpdate: (update: MessageUpdate) => void
       setPlaylist: (playlist: string[]) => void
 }
+
 function Login(props: LoginProps) {
       const [username, setUsername] = useState<string>("")
 

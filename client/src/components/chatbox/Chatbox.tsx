@@ -32,7 +32,7 @@ function Chatbox(props: ChatboxProps) {
       const keydownHandler = (e: React.KeyboardEvent) => {
             if (e.key === 'Enter') {
                   e.preventDefault()
-                  if (msgToSend == "") {
+                  if (msgToSend === "") {
                         return
                   }
                   const username = window.localStorage.getItem("username")
@@ -44,9 +44,9 @@ function Chatbox(props: ChatboxProps) {
             <div className="username">logged in as {username}</div>
             <div className="messages">
                   {props.msgList.map((msg: Message, index: number) =>
-                        <div className="message-wrapper" style={{ justifyContent: msg.getSender() == username ? "flex-end" : "flex-start" }}>
-                              {msg.getType() == MessageType.MESSAGE && <TextMessage Message={msg} />}
-                              {msg.getType() == MessageType.MUSIC && <MusicMessage Message={msg} />}
+                        <div className="message-wrapper" style={{ justifyContent: msg.getSender() === username ? "flex-end" : "flex-start" }}>
+                              {msg.getType() === MessageType.MESSAGE && <TextMessage Message={msg} />}
+                              {msg.getType() === MessageType.MUSIC && <MusicMessage Message={msg} />}
                         </div>
                   )
                   }
