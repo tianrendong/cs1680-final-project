@@ -71,6 +71,8 @@ export class MessageUpdate extends jspb.Message {
   getLatestmsg(): number;
   setLatestmsg(value: number): void;
 
+  hasAnnouncement(): boolean;
+  clearAnnouncement(): void;
   getAnnouncement(): string;
   setAnnouncement(value: string): void;
 

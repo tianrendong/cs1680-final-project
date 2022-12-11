@@ -730,8 +730,8 @@ proto.snowcast.MessageUpdate.serializeBinaryToWriter = function(message, writer)
       f
     );
   }
-  f = message.getAnnouncement();
-  if (f.length > 0) {
+  f = /** @type {string} */ (jspb.Message.getField(message, 2));
+  if (f != null) {
     writer.writeString(
       2,
       f
@@ -772,7 +772,25 @@ proto.snowcast.MessageUpdate.prototype.getAnnouncement = function() {
  * @return {!proto.snowcast.MessageUpdate} returns this
  */
 proto.snowcast.MessageUpdate.prototype.setAnnouncement = function(value) {
-  return jspb.Message.setProto3StringField(this, 2, value);
+  return jspb.Message.setField(this, 2, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.snowcast.MessageUpdate} returns this
+ */
+proto.snowcast.MessageUpdate.prototype.clearAnnouncement = function() {
+  return jspb.Message.setField(this, 2, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.snowcast.MessageUpdate.prototype.hasAnnouncement = function() {
+  return jspb.Message.getField(this, 2) != null;
 };
 
 

@@ -65,9 +65,12 @@ func (s *SnowcastService) Connect(request *pb.User, connection pb.Snowcast_Conne
 
 	// notify others
 	var wg sync.WaitGroup
+	str := new(string)
+	*str = fmt.Sprintf("New user connected: %v", newConnection.userId)
 	update := &pb.MessageUpdate{
-		Announcement: fmt.Sprintf("New user connected: %v", newConnection.userId),
+		Announcement: str,
 	}
+	s.connectionsLock.RLock()
 	for _, conn := range s.connections {
 		if conn.userId != newConnection.userId {
 			wg.Add(1)
@@ -80,6 +83,7 @@ func (s *SnowcastService) Connect(request *pb.User, connection pb.Snowcast_Conne
 			}()
 		}
 	}
+	s.connectionsLock.RUnlock()
 	wg.Wait()
 
 	e := <-newConnection.errCh

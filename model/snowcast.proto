@@ -34,7 +34,7 @@ enum MessageType {
 
 message MessageUpdate {
       int32 latestMsg = 1;
-      string announcement = 2;
+      optional string announcement = 2;
 }
 
 message Message {
