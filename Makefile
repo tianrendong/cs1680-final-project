@@ -1,3 +1,5 @@
+.PHONY: client server
+
 proto:
 	protoc --go_out=. --go-grpc_out=. ./model/snowcast.proto 
 	protoc --plugin="protoc-gen-ts=./client/node_modules/.bin/protoc-gen-ts" --js_out="import_style=commonjs,binary:./client/src/" --ts_out="./client/src/" ./model/snowcast.proto
@@ -13,4 +15,4 @@ server:
 	cd server; go run main.go
 
 client:
-	cd client; npm install; npm start
+	cd client; npm start
