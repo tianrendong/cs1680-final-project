@@ -47,22 +47,42 @@ func NewService() *SnowcastService {
 func (s *SnowcastService) Connect(request *pb.User, connection pb.Snowcast_ConnectServer) error {
 	log.Printf("User %v connected\n", request.GetUserId())
 
-	conn := &Connection{
+	newConnection := &Connection{
 		userId: request.GetUserId(),
 		stream: connection,
 		errCh:  make(chan error),
 	}
 
+	// add to connections
 	s.connectionsLock.Lock()
 	if _, ok := s.connections[request.GetUserId()]; !ok {
-		s.connections[request.UserId] = conn
+		s.connections[request.UserId] = newConnection
 	} else {
 		s.connectionsLock.Unlock()
 		return fmt.Errorf("user with id %v already exists", request.GetUserId())
 	}
 	s.connectionsLock.Unlock()
 
-	e := <-conn.errCh
+	// notify others
+	var wg sync.WaitGroup
+	update := &pb.MessageUpdate{
+		Announcement: fmt.Sprintf("New user connected: %v", newConnection.userId),
+	}
+	for _, conn := range s.connections {
+		if conn.userId != newConnection.userId {
+			wg.Add(1)
+			c := conn
+			go func() {
+				if e := c.stream.Send(update); e != nil {
+					c.errCh <- e
+				}
+				wg.Done()
+			}()
+		}
+	}
+	wg.Wait()
+
+	e := <-newConnection.errCh
 	log.Printf("User %v disconnected\n", request.GetUserId())
 
 	s.connectionsLock.Lock()

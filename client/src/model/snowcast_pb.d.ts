@@ -71,6 +71,9 @@ export class MessageUpdate extends jspb.Message {
   getLatestmsg(): number;
   setLatestmsg(value: number): void;
 
+  getAnnouncement(): string;
+  setAnnouncement(value: string): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): MessageUpdate.AsObject;
   static toObject(includeInstance: boolean, msg: MessageUpdate): MessageUpdate.AsObject;
@@ -84,6 +87,7 @@ export class MessageUpdate extends jspb.Message {
 export namespace MessageUpdate {
   export type AsObject = {
     latestmsg: number,
+    announcement: string,
   }
 }
 

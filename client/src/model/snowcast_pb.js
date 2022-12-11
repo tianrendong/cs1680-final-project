@@ -648,7 +648,8 @@ proto.snowcast.MessageUpdate.prototype.toObject = function(opt_includeInstance) 
  */
 proto.snowcast.MessageUpdate.toObject = function(includeInstance, msg) {
   var f, obj = {
-    latestmsg: jspb.Message.getFieldWithDefault(msg, 1, 0)
+    latestmsg: jspb.Message.getFieldWithDefault(msg, 1, 0),
+    announcement: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
   if (includeInstance) {
@@ -689,6 +690,10 @@ proto.snowcast.MessageUpdate.deserializeBinaryFromReader = function(msg, reader)
       var value = /** @type {number} */ (reader.readInt32());
       msg.setLatestmsg(value);
       break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setAnnouncement(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -725,6 +730,13 @@ proto.snowcast.MessageUpdate.serializeBinaryToWriter = function(message, writer)
       f
     );
   }
+  f = message.getAnnouncement();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
 };
 
 
@@ -743,6 +755,24 @@ proto.snowcast.MessageUpdate.prototype.getLatestmsg = function() {
  */
 proto.snowcast.MessageUpdate.prototype.setLatestmsg = function(value) {
   return jspb.Message.setProto3IntField(this, 1, value);
+};
+
+
+/**
+ * optional string announcement = 2;
+ * @return {string}
+ */
+proto.snowcast.MessageUpdate.prototype.getAnnouncement = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.snowcast.MessageUpdate} returns this
+ */
+proto.snowcast.MessageUpdate.prototype.setAnnouncement = function(value) {
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
