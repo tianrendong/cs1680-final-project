@@ -22,6 +22,13 @@ function Chatbox(props: ChatboxProps) {
             username && sendMessage(username, MessageType.MUSIC, music).then(() => setShowPlaylist(false))
       }
 
+
+      function sendTextMessage() {
+            const username = window.localStorage.getItem("username")
+            username && sendMessage(username, MessageType.MESSAGE, msgToSend)
+                  .then(() => { setMsgToSend("") })
+      }
+
       const keydownHandler = (e: React.KeyboardEvent) => {
             if (e.key === 'Enter') {
                   e.preventDefault()
@@ -31,12 +38,6 @@ function Chatbox(props: ChatboxProps) {
                   const username = window.localStorage.getItem("username")
                   username && sendTextMessage()
             }
-      }
-
-      function sendTextMessage() {
-            const username = window.localStorage.getItem("username")
-            username && sendMessage(username, MessageType.MESSAGE, msgToSend)
-                  .then(() => { setMsgToSend("") })
       }
 
       return <div className="chatbox">
