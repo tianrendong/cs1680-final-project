@@ -1,7 +1,7 @@
 import { SnowcastClient, Status } from "../model/snowcast_pb_service"
-import { User, MessageUpdate, FetchRequest, Messages, Playlist, Message, MessageType, Music, FileChunk } from "../model/snowcast_pb"
-import * as google_protobuf_empty_pb from "google-protobuf/google/protobuf/empty_pb";
-import { concatTypedArrays } from "../utils/array";
+import { User, MessageUpdate, FetchRequest, Message, MessageType, Music, FileChunk } from "../model/snowcast_pb"
+import * as google_protobuf_empty_pb from "google-protobuf/google/protobuf/empty_pb"
+import { concatTypedArrays } from "../utils/array"
 
 const client = new SnowcastClient("http://localhost:3333")
 
@@ -59,7 +59,6 @@ export async function fetchMessages(startIndex: number): Promise<Message[]> {
                   resolve(response ? response.getMessagesList() : [])
             })
       })
-
 }
 
 export async function fetchMusic(music: string): Promise<AudioBufferSourceNode> {
@@ -89,5 +88,4 @@ export async function fetchMusic(music: string): Promise<AudioBufferSourceNode> 
                   resolve(source)
             });
       })
-
 }
