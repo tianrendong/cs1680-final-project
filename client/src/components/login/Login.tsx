@@ -8,6 +8,7 @@ import IconButton from '@mui/material/IconButton'
 interface LoginProps {
       handleMessageUpdate: (update: MessageUpdate) => void
       setPlaylist: (playlist: string[]) => void
+      setLoggedIn: (loggedIn: boolean) => void
 }
 
 function Login(props: LoginProps) {
@@ -15,7 +16,8 @@ function Login(props: LoginProps) {
 
       async function handleLogin() {
             connect(username, props.handleMessageUpdate)
-            sessionStorage.setItem("username", username.toString());
+            sessionStorage.setItem("username", username.toString())
+            props.setLoggedIn(true)
             getPlaylist()
                   .then((playlist: Music[]) => {
                         props.setPlaylist(playlist.map(music => music.getName()))
