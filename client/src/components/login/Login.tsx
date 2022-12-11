@@ -19,10 +19,13 @@ function Login(props: LoginProps) {
                   .catch((err) => console.log(err))
       }
 
-      return <div>
-            <input placeholder="Enter username" onChange={(e) => { setUsername(e.target.value as string) }}></input>
-            <button onClick={handleLogin}>Log in</button>
-      </div>
+      return window.localStorage.getItem("username") == null ?
+            <div>
+                  <input placeholder="Enter username" onChange={(e) => { setUsername(e.target.value as string) }}></input>
+                  <button onClick={handleLogin}>Log in</button>
+            </div> :
+            <div>Logged in as {window.localStorage.getItem("username")}</div>
+
 }
 
 export default Login

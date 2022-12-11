@@ -21,7 +21,7 @@ export function MusicMessage(props: MessageProps) {
       }
 
       return <div className="music-message">
-            <div className="sender">{props.Message.getSender()}</div>
+            <div className="sender">{sender}</div>
             <div className="bodytext">
                   <div className="play-icon">
                         <svg onClick={() => { playMusic(musicName) }} version="1.1" id="play" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" x="0px" y="0px" height="90%" width="90%" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xmlSpace="preserve">
