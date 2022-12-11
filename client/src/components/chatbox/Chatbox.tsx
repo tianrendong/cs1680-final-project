@@ -4,6 +4,7 @@ import { Message, MessageType } from "../../model/snowcast_pb"
 import { MusicMessage, TextMessage } from "../message/Message";
 import QueueMusicIcon from '@mui/icons-material/QueueMusic';
 import IconButton from '@mui/material/IconButton';
+import SendIcon from '@mui/icons-material/Send';
 import { sendMessage } from "../../api/api";
 
 interface ChatboxProps {
@@ -21,19 +22,24 @@ function Chatbox(props: ChatboxProps) {
             username && sendMessage(username, MessageType.MUSIC, music).then(() => setShowPlaylist(false))
       }
 
-      function handleKeyPress(event: React.KeyboardEvent) {
-            if (event.key === 'Enter') {
-                  if (msgToSend == "") {
-                        return
-                  }
-                  const username = window.localStorage.getItem("username")
-                  username && sendMessage(username, MessageType.MESSAGE, msgToSend)
-                        .then(() => { setMsgToSend("") })
-            }
+      // function handleKeyPress(event: React.KeyboardEvent) {
+      //       if (event.key === 'Enter') {
+      //             if (msgToSend == "") {
+      //                   return
+      //             }
+      //             const username = window.localStorage.getItem("username")
+      //             username && sendMessage(username, MessageType.MESSAGE, msgToSend).then(() => { setMsgToSend("") })
+      //       }
+      // }
+
+      function sendTextMessage() {
+            const username = window.localStorage.getItem("username")
+            username && sendMessage(username, MessageType.MESSAGE, msgToSend)
+                  .then(() => { setMsgToSend("") })
       }
 
       return <div className="chatbox">
-            <div>Logged in as {username}</div>
+            <div className="username">logged in as {username}</div>
             <div className="messages">
                   {props.msgList.map((msg: Message, index: number) =>
                         <div className="message-wrapper" style={{ justifyContent: msg.getSender() == username ? "flex-end" : "flex-start" }}>
@@ -46,12 +52,15 @@ function Chatbox(props: ChatboxProps) {
             <div className="bottom">
                   <div className="send-message">
                         <input
-                              placeholder="press 'enter' to send message!"
+                              placeholder="send message"
                               value={msgToSend}
                               onFocus={() => { setShowPlaylist(false) }}
                               onChange={(e) => { setMsgToSend(e.target.value as string) }}
-                              onKeyPress={handleKeyPress}
+                        // onKeyPress={handleKeyPress}
                         ></input>
+                        <IconButton onClick={() => { sendTextMessage() }} color="primary" aria-label="upload picture" component="label">
+                              <SendIcon sx={{ color: '#808080', fontSize: 'medium' }} />
+                        </IconButton>
                         <IconButton onClick={() => { setShowPlaylist(true) }} color="primary" aria-label="upload picture" component="label">
                               <QueueMusicIcon sx={{ color: '#808080' }} />
                         </IconButton>
