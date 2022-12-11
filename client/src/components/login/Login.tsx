@@ -22,6 +22,21 @@ function Login(props: LoginProps) {
                   .catch((err) => console.log(err))
       }
 
+      useEffect(() => {
+            const keydownHandler = (e: KeyboardEvent) => {
+                  if (e.key === 'Enter') {
+                        e.preventDefault()
+                        handleLogin()
+                  }
+            }
+
+            document.addEventListener('keydown', keydownHandler)
+
+            return () => {
+                  document.removeEventListener('keydown', keydownHandler)
+            }
+      }, [])
+
       return <div className="login">
             <input className="input-box" placeholder="Enter username" onChange={(e) => { setUsername(e.target.value as string) }}></input>
             <IconButton onClick={handleLogin} color="primary" aria-label="upload picture" component="label">
