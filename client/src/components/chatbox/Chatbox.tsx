@@ -22,15 +22,16 @@ function Chatbox(props: ChatboxProps) {
             username && sendMessage(username, MessageType.MUSIC, music).then(() => setShowPlaylist(false))
       }
 
-      // function handleKeyPress(event: React.KeyboardEvent) {
-      //       if (event.key === 'Enter') {
-      //             if (msgToSend == "") {
-      //                   return
-      //             }
-      //             const username = window.localStorage.getItem("username")
-      //             username && sendMessage(username, MessageType.MESSAGE, msgToSend).then(() => { setMsgToSend("") })
-      //       }
-      // }
+      const keydownHandler = (e: React.KeyboardEvent) => {
+            if (e.key === 'Enter') {
+                  e.preventDefault()
+                  if (msgToSend == "") {
+                        return
+                  }
+                  const username = window.localStorage.getItem("username")
+                  username && sendTextMessage()
+            }
+      }
 
       function sendTextMessage() {
             const username = window.localStorage.getItem("username")
@@ -56,7 +57,7 @@ function Chatbox(props: ChatboxProps) {
                               value={msgToSend}
                               onFocus={() => { setShowPlaylist(false) }}
                               onChange={(e) => { setMsgToSend(e.target.value as string) }}
-                        // onKeyPress={handleKeyPress}
+                              onKeyDown={keydownHandler}
                         ></input>
                         <IconButton onClick={() => { sendTextMessage() }} color="primary" aria-label="upload picture" component="label">
                               <SendIcon sx={{ color: '#808080', fontSize: 'medium' }} />
