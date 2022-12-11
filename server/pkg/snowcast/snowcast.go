@@ -125,6 +125,8 @@ func (s *SnowcastService) SendMessage(ctx context.Context, message *pb.Message) 
 }
 
 func (s *SnowcastService) FetchMessages(ctx context.Context, request *pb.FetchRequest) (*pb.Messages, error) {
+	log.Printf("Fetching messages from %v\n", request.GetStartIndex())
+
 	s.msgLock.RLock()
 	defer s.msgLock.RUnlock()
 
@@ -137,6 +139,8 @@ func (s *SnowcastService) FetchMessages(ctx context.Context, request *pb.FetchRe
 }
 
 func (s *SnowcastService) FetchMusic(request *pb.Music, connection pb.Snowcast_FetchMusicServer) error {
+	log.Printf("Fetching music %v\n", request.GetName())
+
 	f, e := os.Open(MUSIC_FOLDER + request.GetName() + ".mp3")
 	if e != nil {
 		return e
