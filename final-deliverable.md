@@ -8,6 +8,8 @@ The README contains detailed information about building and running the applicat
 
 ## Demo
 
+https://user-images.githubusercontent.com/52697551/206933836-33d26b4b-6c89-4640-b3eb-daecc10facce.mp4
+
 ## gRPC & gRPC for web client
 gRPC is a framework for Remote Procedure Call (RPC). Based on our understanding and usage so far, it has two primary advantages: 
 1. gRPC allows users to define message formats and services using Protocol Buffers and automatically generates client and server service stubs in different languages. Developers need to strictly adhere to the message formats for service requests and responses, and can access different fields of the message using the accessor and mutator methods generated. Compared to self-implemented protocols, like what we have done in Snowcast, this reduces the need to write customized marshall and unmarshall functions for different messages. In addition, this ensures that the message and service definitions are consistent across the client and server, making the program robust and extensible. 
