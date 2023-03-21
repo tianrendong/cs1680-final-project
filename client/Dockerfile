@@ -5,13 +5,9 @@ FROM node:16
 WORKDIR /app
 
 # install app dependencies
-COPY package.json ./
-COPY package-lock.json ./
+COPY package*.json ./
 RUN npm install --silent
-RUN npm install react-scripts@3.4.1 -g --silent
 
-# add app
+# add app and build
 COPY . ./
-
-# start app
-CMD ["npm", "run", "build"]
+RUN npm install && npm run build
