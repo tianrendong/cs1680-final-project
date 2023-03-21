@@ -11,3 +11,8 @@ RUN npm install --silent
 # add app and build
 COPY . ./
 RUN npm install && npm run build
+
+# install server
+RUN npm install -g serve
+
+CMD ["server", "-s", "build"]
