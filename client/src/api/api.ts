@@ -25,7 +25,7 @@ export function connect(userId: string, handleMessageUpdate: (m: MessageUpdate) 
 }
 
 export function getPlaylist(): Promise<Music[]> {
-      const request = new google_protobuf_empty_pb.Empty
+      const request = new google_protobuf_empty_pb.Empty()
       return new Promise((resolve, reject) => {
             client.getPlaylist(request, (err, response) => {
                   if (err) reject(err)

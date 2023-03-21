@@ -1,6 +1,6 @@
 import "./Message.scss"
 import { fetchMusic } from "../../api/api"
-import { User, MessageUpdate, MessageType, Message, Messages } from "../../model/snowcast_pb"
+import { Message } from "../../model/snowcast_pb"
 import { useState } from "react"
 interface MessageProps {
       Message: Message
@@ -42,9 +42,9 @@ export function MusicMessage(props: MessageProps) {
       return <div className="music-message">
             <div className="sender">{sender}</div>
             <div className="bodytext">
-                  <div className="play-icon" onClick={() => { status == MusicStatus.PLAYING ? stopMusic() : playMusic(musicName) }}>
+                  <div className="play-icon" onClick={() => { status === MusicStatus.PLAYING ? stopMusic() : playMusic(musicName) }}>
                         <svg height="90%" width="auto" viewBox="0 0 237 237" fill="none" xmlns="http://www.w3.org/2000/svg" >
-                              {status == MusicStatus.PLAYING ?
+                              {status === MusicStatus.PLAYING ?
                                     // stop icon
                                     <rect className="center" x="72" y="72" width="93" height="93" fill="#F9195C" /> :
                                     // play icon
@@ -57,7 +57,7 @@ export function MusicMessage(props: MessageProps) {
                   <div className="text">
                         <div>{musicName}</div>
                         <div className="loading">
-                              {status == MusicStatus.LOADING && "Loading..."}
+                              {status === MusicStatus.LOADING && "Loading..."}
                         </div>
                   </div>
 
