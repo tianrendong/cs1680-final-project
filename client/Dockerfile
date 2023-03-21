@@ -1,3 +1,13 @@
-FROM envoyproxy/envoy-dev:latest
-COPY envoy.yaml /etc/envoy/envoy.yaml
-RUN chmod go+r /etc/envoy/envoy.yaml
+FROM node:16
+
+WORKDIR /app/client
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 3000
+
+CMD [ "npm", "run", "build" ]
