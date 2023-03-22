@@ -3,7 +3,7 @@ import { User, MessageUpdate, FetchRequest, Message, MessageType, Music, FileChu
 import * as google_protobuf_empty_pb from "google-protobuf/google/protobuf/empty_pb"
 import { concatTypedArrays } from "../utils/array"
 
-const client = new SnowcastClient("https://song-chat-envoy.up.railway.app/")
+const client = new SnowcastClient(":3333")
 
 export function connect(userId: string, handleMessageUpdate: (m: MessageUpdate) => void) {
       const request = new User()

@@ -3,7 +3,7 @@ FROM golang:latest AS server
 WORKDIR /app
 COPY server .
 RUN go get ./...
-RUN go build -o server .
+RUN go build -o out .
 
 # Build the React client
 FROM node:latest AS client
@@ -18,5 +18,4 @@ COPY envoy/envoy.yaml /etc/envoy/envoy.yaml
 RUN chmod go+r /etc/envoy/envoy.yaml
 COPY --from=server /app/server /usr/local/bin/server
 COPY --from=client /app/build /usr/share/nginx/html
-EXPOSE 8080
-CMD /usr/local/bin/server
+CMD ["/usr/local/bin/server/out"]

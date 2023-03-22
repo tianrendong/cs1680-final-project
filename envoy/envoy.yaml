@@ -56,5 +56,4 @@ static_resources:
               - endpoint:
                   address:
                     socket_address:
-                      address: https://song-chat-server.up.railway.app/
-                      port_value: 80
+                      address: https://song-chat.up.railway.app/
