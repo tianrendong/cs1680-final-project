@@ -16,6 +16,7 @@ RUN npm run build
 FROM envoyproxy/envoy-dev:latest
 COPY envoy/envoy.yaml /etc/envoy/envoy.yaml
 RUN chmod go+r /etc/envoy/envoy.yaml
-COPY --from=server /app/server /usr/local/bin/server
-COPY --from=client /app/build /usr/share/nginx/html
-CMD ["/usr/local/bin/server"]
+COPY --from=server /app/server /app/server
+COPY --from=client /app/build /app/build
+WORKDIR /app
+CMD ["./server"]
